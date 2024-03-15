@@ -202,7 +202,6 @@ Function Parse-Days-Count {
 # Assumes services aren't weird
 Function Parse-Schedule {
 	Param ([string[]]$housekeeping);
-    $global:inspect = $housekeeping;
 	[string[][]] $schedule = (0..8 | % {
 		$dayIndex = $_;
 		5..9 |
@@ -238,7 +237,7 @@ Function Are-Services-Weird {
 
 Function Is-Checkout-Weird {
 	Param ([string[][]]$schedule);
-	if (Array-Some ($schedule | Select-Object -SkipLast 1) {"C/O " -in $_}) {
+	if (Array-Some ($schedule | Select-Object -SkipLast 1) {Param($x); "C/O " -in $x}) {
 		return $true;
 	}
 	if ($schedule.Count -eq 9) {
