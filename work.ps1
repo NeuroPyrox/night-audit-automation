@@ -193,7 +193,7 @@ Function Parse-Days-Count {
 	}
 	$days = 0..8 | % {$days.Substring(21 + (6 * $_), 3)};
 	$days = Trim-End $days {Param($x); $x -eq "   "};
-	if (Array-Some $days {!($_ -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")}) {
+	if (Array-Some $days {Param([string]$x); !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")}) {
 		throw "Unexpected value for a day";
 	}
 	$days.Count;
@@ -214,18 +214,18 @@ Function Parse-Schedule {
 				$_;
 			}
 	}
-	Trim-End $schedule {Param($x); $x.Count -eq 0};
+	Trim-End $schedule {Param([string[][]]$x); $x.Count -eq 0};
 }
 
 Function Are-Services-Weird {
 	Param ([object[]]$services);
-	if (Array-Some $services {!($_ -in "C/O ", "TIDY", "RFSH", "1XWE")}) {
+	if (Array-Some $services {Param([string]$x); !($x -in "CHECK OUT", "TIDY    ", "RFSH    ", "1XWE    ")}) {
 		return $true;
 	}
-	$foundCo = "C/O " -in $services;
-	$foundTidy = "TIDY" -in $services;
-	$foundRfsh = "RFSH" -in $services;
-	$found1xwe = "1XWE" -in $services;
+	$foundCo = "CHECK OUT" -in $services;
+	$foundTidy = "TIDY    " -in $services;
+	$foundRfsh = "RFSH    " -in $services;
+	$found1xwe = "1XWE    " -in $services;
 	!($foundCo -and ( `
 				(!$foundTidy -and !$foundRfsh -and !$found1xwe) `
 				-or (!$foundTidy -and !$foundRfsh -and $found1xwe) `
@@ -342,10 +342,10 @@ Function Main {
 		    Send-Keys "g";
 		    Add-Housekeeping-If-None $roomNumber;
 		    Send-Keys "{F4}";
+            Wait;
 		    Send-Keys "{F4}";
 	    } else {
             Write-Host "$roomNumber not found"
         }
     }
 }
-
