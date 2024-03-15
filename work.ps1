@@ -266,20 +266,21 @@ Function Are-Non-Checkouts-Weird {
 				@(0, 0, 0, 0, 3, 0, 0, 0, 0), `
 				@(0, 0, 0, 0, 0, 3, 0, 0, 0) `
 				) {
+            Param($weeklyPattern);
 			# If there's no mismatching day
 			for ($dayIndex = 0; $dayIndex -lt $schedule.Count; $dayIndex++) {
-			$foundTidy = "TIDY" -in $schedule[$dayIndex];
-			$foundRfsh = "RFSH" -in $schedule[$dayIndex];
-			$found1xwe = "1XWE" -in $schedule[$dayIndex];
-			# If the day doesn't match
-			if (!( `
-						(($_[$dayIndex] -eq 0) -and $foundTidy -and !$foundRfsh -and !$found1xwe) `
-						-or (($_[$dayIndex] -eq 1) -and !$foundTidy -and $foundRfsh -and !$found1xwe) `
-						-or (($_[$dayIndex] -eq 2) -and !$foundTidy -and $foundRfsh -and $found1xwe) `
-						-or (($_[$dayIndex] -eq 3) -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
-				 )) {
-				return $false;
-			}
+                $foundTidy = "TIDY" -in $schedule[$dayIndex];
+			    $foundRfsh = "RFSH" -in $schedule[$dayIndex];
+			    $found1xwe = "1XWE" -in $schedule[$dayIndex];
+			    # If the day doesn't match
+			    if (!( `
+				        (($weeklyPattern[$dayIndex] -eq 0) -and $foundTidy -and !$foundRfsh -and !$found1xwe) `
+					    -or (($weeklyPattern[$dayIndex] -eq 1) -and !$foundTidy -and $foundRfsh -and !$found1xwe) `
+				        -or (($weeklyPattern[$dayIndex] -eq 2) -and !$foundTidy -and $foundRfsh -and $found1xwe) `
+					    -or (($weeklyPattern[$dayIndex] -eq 3) -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
+				     )) {
+				    return $false;
+			    }
 			}
 			$true;
 	})
@@ -342,6 +343,9 @@ Function Main {
 		    Send-Keys "g";
 		    Add-Housekeeping-If-None $roomNumber;
 		    Send-Keys "{F4}";
+            Wait;
+            Wait;
+            Wait;
             Wait;
 		    Send-Keys "{F4}";
 	    } else {
