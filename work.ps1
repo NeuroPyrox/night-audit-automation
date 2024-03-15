@@ -219,14 +219,15 @@ Function Parse-Schedule {
 
 Function Are-Services-Weird {
 	Param ([object[]]$services);
-	if (Array-Some $services {Param([string]$x); !($x -in "CHECK OUT", "TIDY    ", "RFSH    ", "1XWE    ")}) {
+	if (Array-Some $services {Param([string]$x); !($x -in "CHECK OUT", "TIDY     ", "RFSH     ", "1XWE     ")}) {
+        $services | % {Write-Host $_.Length, $_;};
 		return $true;
 	}
-	$foundCo = "CHECK OUT" -in $services;
-	$foundTidy = "TIDY    " -in $services;
-	$foundRfsh = "RFSH    " -in $services;
-	$found1xwe = "1XWE    " -in $services;
-	!($foundCo -and ( `
+	$foundCheckout = "CHECK OUT" -in $services;
+	$foundTidy = "TIDY     " -in $services;
+	$foundRfsh = "RFSH     " -in $services;
+	$found1xwe = "1XWE     " -in $services;
+	!($foundCheckout -and ( `
 				(!$foundTidy -and !$foundRfsh -and !$found1xwe) `
 				-or (!$foundTidy -and !$foundRfsh -and $found1xwe) `
 				-or ($foundTidy -and !$foundRfsh -and !$found1xwe) `
