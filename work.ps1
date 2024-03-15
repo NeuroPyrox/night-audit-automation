@@ -202,7 +202,8 @@ Function Parse-Days-Count {
 # Assumes services aren't weird
 Function Parse-Schedule {
 	Param ([string[]]$housekeeping);
-	$schedule = 0..8 | % {
+    $global:inspect = $housekeeping;
+	[string[][]] $schedule = (0..8 | % {
 		$dayIndex = $_;
 		5..9 |
 			% {$housekeeping[$_].Substring(20 + (6 * $dayIndex), 4)} |
@@ -213,14 +214,13 @@ Function Parse-Schedule {
 				}
 				$_;
 			}
-	}
-	Trim-End $schedule {Param([string[][]]$x); $x.Count -eq 0};
+	})
+	Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0};
 }
 
 Function Are-Services-Weird {
 	Param ([object[]]$services);
 	if (Array-Some $services {Param([string]$x); !($x -in "CHECK OUT", "TIDY     ", "RFSH     ", "1XWE     ")}) {
-        $services | % {Write-Host $_.Length, $_;};
 		return $true;
 	}
 	$foundCheckout = "CHECK OUT" -in $services;
