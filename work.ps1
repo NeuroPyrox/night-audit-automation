@@ -85,6 +85,7 @@ Function Navigate-To-Room-Number {
 	Right-Click;
 	Move-Mouse 1250 290;
 	Left-Click;
+	$found = Get-Clipboard;
 	if ($found.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
