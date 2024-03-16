@@ -172,9 +172,9 @@ Function Parse-Services {
 		if ($housekeeping[$_].Length -ne 72) {
 			throw "Expected 72 characters";
 		}
-		$housekeeping[$_].Substring(1, 9);
+		$housekeeping[$_].Substring(1, 17);
 	}
-	$services = Trim-End $services {Param($x); $x -eq "         ";};
+	$services = Trim-End $services {Param($x); $x -eq "                 ";};
 	if ($services.Count -ne ($services | Select-Object -Unique).Count) {
 		throw "Should only have one of each type of available service";
 	}
@@ -225,13 +225,19 @@ Function Parse-Schedule {
 
 Function Are-Services-Weird {
 	Param ([object[]]$services);
-	if (Array-Some $services {Param([string]$x); !($x -in "CHECK OUT", "TIDY     ", "RFSH     ", "1XWE     ")}) {
+    $options = @( `
+        "CHECK OUT        ", `
+        "TIDY             ", `
+        "HOUSEKEEPING REFR", `
+        "1XWE             " `
+    );
+	if (Array-Some $services {Param([string]$x); !($x -in $options)}) {
 		return $true;
 	}
-	$foundCheckout = "CHECK OUT" -in $services;
-	$foundTidy = "TIDY     " -in $services;
-	$foundRfsh = "RFSH     " -in $services;
-	$found1xwe = "1XWE     " -in $services;
+	$foundCheckout = "CHECK OUT        " -in $services;
+	$foundTidy = "TIDY             " -in $services;
+	$foundRfsh = "HOUSEKEEPING REFR" -in $services;
+	$found1xwe = "1XWE             " -in $services;
 	!($foundCheckout -and ( `
 				(!$foundTidy -and !$foundRfsh -and !$found1xwe) `
 				-or (!$foundTidy -and !$foundRfsh -and $found1xwe) `
@@ -270,7 +276,7 @@ Function Are-Non-Checkouts-Weird {
 				@(3, 3, 4, 3, 3, 3, 3, 3, 3), `
 				@(3, 3, 3, 4, 3, 3, 3, 3, 3), `
 				@(3, 3, 3, 3, 4, 3, 3, 3, 3), `
-				@(3, 3, 3, 3, 3, 4, 3, 3, 3)
+				@(3, 3, 3, 3, 3, 4, 3, 3, 3) `
 				) {
             Param($weeklyPattern);
 			# If there's no mismatching day
