@@ -168,7 +168,6 @@ Function Trim-End {
 
 Function Parse-Services {
 	Param ([string[]]$housekeeping);
-	# TODO find the right index instead of 3
 	$services = 5..9 | % {
 		if ($housekeeping[$_].Length -ne 72) {
 			throw "Expected 72 characters";
@@ -214,7 +213,6 @@ Function Parse-Schedule {
 			};
         $schedule.Add($dayServices);
 	}
-    # TODO Update to account for empties before C/O
 	Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0};
 }
 
@@ -250,7 +248,6 @@ Function Is-Checkout-Weird {
 # Assumes there won't be any unrecognized services
 Function Are-Non-Checkouts-Weird {
 	Param ([string[][]]$schedule);
-    # TODO fix 0s
 	# If there's no matching schedule
 	!(Array-Some @( `
 				@(0, 0, 1, 0, 0, 0, 2, 0, 0), `
@@ -260,13 +257,13 @@ Function Are-Non-Checkouts-Weird {
 				@(0, 0, 0, 2, 0, 0, 1, 0, 0), `
 				@(1, 0, 0, 0, 2, 0, 0, 1, 0), `
 				@(0, 1, 0, 0, 0, 2, 0, 0, 1), `
-				@(0, 0, 0, 0, 0, 0, 3, 0, 0), `
-				@(3, 0, 0, 0, 0, 0, 0, 3, 0), `
-				@(0, 3, 0, 0, 0, 0, 0, 0, 3), `
-				@(0, 0, 3, 0, 0, 0, 0, 0, 0), `
-				@(0, 0, 0, 3, 0, 0, 0, 0, 0), `
-				@(0, 0, 0, 0, 3, 0, 0, 0, 0), `
-				@(0, 0, 0, 0, 0, 3, 0, 0, 0) `
+				@(3, 3, 3, 3, 3, 3, 4, 3, 3), `
+				@(4, 3, 3, 3, 3, 3, 3, 4, 3), `
+				@(3, 4, 3, 3, 3, 3, 3, 3, 4), `
+				@(3, 3, 4, 3, 3, 3, 3, 3, 3), `
+				@(3, 3, 3, 4, 3, 3, 3, 3, 3), `
+				@(3, 3, 3, 3, 4, 3, 3, 3, 3), `
+				@(3, 3, 3, 3, 3, 4, 3, 3, 3)
 				) {
             Param($weeklyPattern);
 			# If there's no mismatching day
@@ -279,7 +276,8 @@ Function Are-Non-Checkouts-Weird {
 				        (($weeklyPattern[$dayIndex] -eq 0) -and $foundTidy -and !$foundRfsh -and !$found1xwe) `
 					    -or (($weeklyPattern[$dayIndex] -eq 1) -and !$foundTidy -and $foundRfsh -and !$found1xwe) `
 				        -or (($weeklyPattern[$dayIndex] -eq 2) -and !$foundTidy -and $foundRfsh -and $found1xwe) `
-					    -or (($weeklyPattern[$dayIndex] -eq 3) -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
+					    -or (($weeklyPattern[$dayIndex] -eq 3) -and !$foundTidy -and !$foundRfsh -and !$found1xwe) `
+					    -or (($weeklyPattern[$dayIndex] -eq 4) -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
 				     )) {
 				    return $false;
 			    }
