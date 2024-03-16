@@ -155,16 +155,13 @@ Function Array-Some {
 
 Function Trim-End {
     Param ($array, $isEnd);
+    $lastIndex = $array.Count - 1;
+    while (&$isEnd $array[$lastIndex]) {
+        $lastIndex--;
+    }
     $result = New-Object System.Collections.Generic.List[System.Object];
-    $reachedEnd = $false;
-    foreach ($item in $array) {
-        if (&$isEnd $item) {
-			$reachedEnd = $true;
-		} elseif ($reachedEnd) {
-			throw "Didn't expect to find anything after the end";
-		} else {
-			$result.Add($item);
-		}
+    for ($i = 0; $i -le $lastIndex; i++) {
+        $result.Add($array[$i]);
     }
     $result;
 }
@@ -178,7 +175,7 @@ Function Parse-Services {
 		}
 		$housekeeping[$_].Substring(1, 9);
 	}
-	$services = Trim-End $services {Param($x); $x -eq "         "};
+	$services = Trim-End $services {Param($x); $x -eq "         ";};
 	if ($services.Count -ne ($services | Select-Object -Unique).Count) {
 		throw "Should only have one of each type of available service";
 	}
@@ -193,7 +190,7 @@ Function Parse-Days-Count {
 	}
 	$days = 0..8 | % {$days.Substring(21 + (6 * $_), 3)};
 	$days = Trim-End $days {Param($x); $x -eq "   "};
-	if (Array-Some $days {Param([string]$x); !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")}) {
+	if (Array-Some $days {Param([string]$x); !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");}) {
 		throw "Unexpected value for a day";
 	}
 	$days.Count;
@@ -253,7 +250,6 @@ Function Is-Checkout-Weird {
 # Assumes there won't be any unrecognized services
 Function Are-Non-Checkouts-Weird {
 	Param ([string[][]]$schedule);
-    $schedule | % {Write-Host $_};
     # TODO fix 0s
 	# If there's no matching schedule
 	!(Array-Some @( `
@@ -288,7 +284,6 @@ Function Are-Non-Checkouts-Weird {
 				    return $false;
 			    }
 			}
-            Write-Host $weeklyPattern;
 			$true;
 	})
 }
