@@ -198,10 +198,7 @@ Function Parse-Days-Count {
 Function Print-Schedule {
 	Param ([string[][]]$schedule);
     $schedule | % {
-        Write-Host $_.Count;
-        $_ | % {
-            Write-Host $_
-        }
+        Write-Host $_.Count, $_;
     }
 }
 
@@ -223,7 +220,6 @@ Function Parse-Schedule {
 			};
         $null = $schedule.Add($dayServices);
 	}
-    Print-Schedule $schedule;
 	Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0};
 }
 
@@ -319,6 +315,7 @@ Function Add-Housekeeping-If-None {
 	}
 	$daysCount = Parse-Days-Count $housekeeping;
 	$schedule = Parse-Schedule $housekeeping;
+    Print-Schedule $schedule;
 	if ($daysCount -ne $schedule.Count) {
 		throw "Expected days and schedule to be the same length";
 	}
@@ -346,11 +343,12 @@ Function Add-Housekeeping-If-None {
 }
 
 Function Main {
+    Param([int]$startRoom)
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
     Move-Mouse 10 385;
     Left-Click;
-    foreach ($roomNumber in $roomNumbers) {
-        # TODO start at room #
+    for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
+        $roomNumber = $roomNumbers[$roomIndex];
 	    $foundRoom = Navigate-To-Room-Number $roomNumber;
 	    if ($foundRoom) {
 		    Send-Keys "g";
