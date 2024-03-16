@@ -163,7 +163,7 @@ Function Trim-End {
 		} elseif ($reachedEnd) {
 			throw "Didn't expect to find anything after the end";
 		} else {
-			$result.add($item);
+			$result.Add($item);
 		}
     }
     $result;
@@ -202,8 +202,10 @@ Function Parse-Days-Count {
 # Assumes services aren't weird
 Function Parse-Schedule {
 	Param ([string[]]$housekeeping);
-	[string[][]] $schedule = (0..8 | % {
+    $schedule = [System.Collections.ArrayList]@();
+	0..8 | % {
 		$dayIndex = $_;
+        $dayServices = [System.Collections.ArrayList]@();
 		5..9 |
 			% {$housekeeping[$_].Substring(20 + (6 * $dayIndex), 4)} |
 			where {$_ -ne "    "} |
@@ -211,9 +213,11 @@ Function Parse-Schedule {
 				if (!($_ -in @("C/O ", "TIDY", "RFSH", "1XWE"))) {
 					throw "Unrecognized service";
 				}
-				$_;
-			}
-	})
+                $dayServices.Add($_)
+			};
+        $schedule.Add($dayServices);
+	}
+    # TODO Update to account for empties before C/O
 	Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0};
 }
 
@@ -249,6 +253,8 @@ Function Is-Checkout-Weird {
 # Assumes there won't be any unrecognized services
 Function Are-Non-Checkouts-Weird {
 	Param ([string[][]]$schedule);
+    $schedule | % {Write-Host $_};
+    # TODO fix 0s
 	# If there's no matching schedule
 	!(Array-Some @( `
 				@(0, 0, 1, 0, 0, 0, 2, 0, 0), `
@@ -282,6 +288,7 @@ Function Are-Non-Checkouts-Weird {
 				    return $false;
 			    }
 			}
+            Write-Host $weeklyPattern;
 			$true;
 	})
 }
@@ -302,7 +309,6 @@ Function Is-Schedule-Empty {
 Function Add-Housekeeping-If-None {
 	Param ([int]$roomNumber);
 	$housekeeping = Copy-Housekeeping-Screen;
-	# TODO validate $housekeeping
 	$services = Parse-Services $housekeeping;
 	if (Are-Services-Weird $services) {
 		return Write-Host "$roomNumber weird services";
@@ -313,12 +319,14 @@ Function Add-Housekeeping-If-None {
 		throw "Expected days and schedule to be the same length";
 	}
 	if (Is-Checkout-Weird $schedule) {
-		# TODO make into an assertion if possible
 		return Write-Host "$roomNumber weird C/O";
 	}
 	if ("C/O " -in $schedule[-1]) {
 		$schedule = $schedule | Select-Object -SkipLast 1;
 	}
+    if ($schedule.Count -eq 0) {
+		return Write-Host "$roomNumber normal empty"
+    }
 	if (Are-Non-Checkouts-Weird $schedule) {
 		return Write-Host "$roomNumber weird TIDY, RFSH, or 1XWE";
 	}
@@ -328,6 +336,7 @@ Function Add-Housekeeping-If-None {
 	if (("TIDY" -in $services) -or ("RFSH" -in $services)) {
 	    return Write-Host "$roomNumber weird unused services"
 	}
+    Write-Hose "$roomNumber needs housekeeping"
 	# TODO first make sure everything above works as expected
 	# Add-Housekeeping $daysCount
 }
