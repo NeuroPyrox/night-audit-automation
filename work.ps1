@@ -160,7 +160,7 @@ Function Trim-End {
         $lastIndex--;
     }
     $result = New-Object System.Collections.Generic.List[System.Object];
-    for ($i = 0; $i -le $lastIndex; i++) {
+    for ($i = 0; $i -le $lastIndex; $i++) {
         $result.Add($array[$i]);
     }
     $result;
@@ -193,6 +193,16 @@ Function Parse-Days-Count {
 		throw "Unexpected value for a day";
 	}
 	$days.Count;
+}
+
+Function Print-Schedule {
+	Param ([string[][]]$schedule);
+    $schedule | % {
+        Write-Host $_.Count;
+        $_ | % {
+            Write-Host $_.Count, $_
+        }
+    }
 }
 
 # Assumes services aren't weird
