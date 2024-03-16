@@ -1,10 +1,5 @@
 $inspect = $null;
 
-Function Inspect-Strings {
-    Param ([string[]]$strings);
-    $strings | % {Write-Host "$($_.Length) $_"}
-}
-
 Function Wait {
     Sleep -Milliseconds 200;
     Add-Type -AssemblyName System.Windows.Forms;
@@ -76,11 +71,25 @@ Function Navigate-To-Room-Number {
 		Send-Keys "{F4}";
 		return $false;
 	}
-	if ($found.Substring(0, 3) -ne $roomNumber.ToString()) {
-		throw "Expected to find a checked-in room of the same value";
+	if ($found.Substring(0, 3) -eq $roomNumber.ToString()) {
+	    Send-Keys "~";
+	    return $true;
 	}
-	Send-Keys "~";
-	$true;
+    if ($found.Substring(0, 3) -ne "C/O") {
+	    throw "Expected to find a checked out room if the room number doesn't match";
+    }
+	Move-Mouse 710 280;
+	Down-Mouse;
+	Move-Mouse 1310 280;
+	Up-Mouse;
+	Right-Click;
+	Move-Mouse 1250 290;
+	Left-Click;
+	if ($found.Substring(0, 3) -eq $roomNumber.ToString()) {
+	    Send-Keys "~";
+	    return $true;
+	}
+	throw "Didn't expect 2nd row not to match the room number";
 }
 
 Function Copy-Housekeeping-Screen {
