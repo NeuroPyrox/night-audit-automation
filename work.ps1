@@ -86,11 +86,18 @@ Function Navigate-To-Room-Number {
 	Move-Mouse 1250 290;
 	Left-Click;
 	$found = Get-Clipboard;
+	if ($found.Substring(0, 3) -eq "   ") {
+		Send-Keys "{F4}";
+		return $false;
+	}
 	if ($found.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
 	}
-	throw "Didn't expect 2nd row not to match the room number";
+    if ($found.Substring(0, 3) -eq "C/O") {
+	    throw "Unhandled case of 2 or more checkouts";
+    }
+	throw "Expected either spaces, the same room number, or `"C/O`"";
 }
 
 Function Copy-Housekeeping-Screen {
