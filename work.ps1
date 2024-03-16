@@ -161,7 +161,7 @@ Function Trim-End {
     }
     $result = New-Object System.Collections.Generic.List[System.Object];
     for ($i = 0; $i -le $lastIndex; $i++) {
-        $result.Add($array[$i]);
+        $null = $result.Add($array[$i]);
     }
     $result;
 }
@@ -200,7 +200,7 @@ Function Print-Schedule {
     $schedule | % {
         Write-Host $_.Count;
         $_ | % {
-            Write-Host $_.Count, $_
+            Write-Host $_
         }
     }
 }
@@ -219,10 +219,11 @@ Function Parse-Schedule {
 				if (!($_ -in @("C/O ", "TIDY", "RFSH", "1XWE"))) {
 					throw "Unrecognized service";
 				}
-                $dayServices.Add($_)
+                $null = $dayServices.Add($_)
 			};
-        $schedule.Add($dayServices);
+        $null = $schedule.Add($dayServices);
 	}
+    Print-Schedule $schedule;
 	Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0};
 }
 
