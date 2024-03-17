@@ -286,39 +286,36 @@ Function Are-Non-Checkouts-Weird {
 	Param ([string[][]]$schedule);
 	# If there's no matching schedule
 	!(Array-Some @( `
-				@(0, 0, 1, 0, 0, 0, 2, 0, 0), `
-				@(2, 0, 0, 1, 0, 0, 0, 2, 0), `
-				@(0, 2, 0, 0, 1, 0, 0, 0, 2), `
-				@(0, 0, 2, 0, 0, 1, 0, 0, 0), `
-				@(0, 0, 0, 2, 0, 0, 1, 0, 0), `
-				@(1, 0, 0, 0, 2, 0, 0, 1, 0), `
-				@(0, 1, 0, 0, 0, 2, 0, 0, 1), `
-				@(3, 3, 3, 3, 3, 3, 4, 3, 3), `
-				@(4, 3, 3, 3, 3, 3, 3, 4, 3), `
-				@(3, 4, 3, 3, 3, 3, 3, 3, 4), `
-				@(3, 3, 4, 3, 3, 3, 3, 3, 3), `
-				@(3, 3, 3, 4, 3, 3, 3, 3, 3), `
-				@(3, 3, 3, 3, 4, 3, 3, 3, 3), `
-				@(3, 3, 3, 3, 3, 4, 3, 3, 3) `
+				@(1, 1, 2, 1, 1, 1, 3, 1, 1), `
+				@(3, 1, 1, 2, 1, 1, 1, 3, 1), `
+				@(1, 3, 1, 1, 2, 1, 1, 1, 3), `
+				@(1, 1, 3, 1, 1, 2, 1, 1, 1), `
+				@(1, 1, 1, 3, 1, 1, 2, 1, 1), `
+				@(2, 1, 1, 1, 3, 1, 1, 2, 1), `
+				@(1, 2, 1, 1, 1, 3, 1, 1, 2), `
+				@(0, 0, 0, 0, 0, 0, 3, 0, 0), `
+				@(3, 0, 0, 0, 0, 0, 0, 3, 0), `
+				@(0, 3, 0, 0, 0, 0, 0, 0, 3), `
+				@(0, 0, 3, 0, 0, 0, 0, 0, 0), `
+				@(0, 0, 0, 3, 0, 0, 0, 0, 0), `
+				@(0, 0, 0, 0, 3, 0, 0, 0, 0), `
+				@(0, 0, 0, 0, 0, 3, 0, 0, 0) `
 				) {
-            Param($weeklyPattern);
 			# If there's no mismatching day
+            Param($weeklyPattern);
 			for ($dayIndex = 0; $dayIndex -lt $schedule.Count; $dayIndex++) {
-                $foundTidy = "TIDY" -in $schedule[$dayIndex];
-			    $foundRfsh = "RFSH" -in $schedule[$dayIndex];
-			    $found1xwe = "1XWE" -in $schedule[$dayIndex];
 			    # If the day doesn't match
-			    if (!( `
-				        (($weeklyPattern[$dayIndex] -eq 0) -and $foundTidy -and !$foundRfsh -and !$found1xwe) `
-					    -or (($weeklyPattern[$dayIndex] -eq 1) -and !$foundTidy -and $foundRfsh -and !$found1xwe) `
-				        -or (($weeklyPattern[$dayIndex] -eq 2) -and !$foundTidy -and $foundRfsh -and $found1xwe) `
-					    -or (($weeklyPattern[$dayIndex] -eq 3) -and !$foundTidy -and !$foundRfsh -and !$found1xwe) `
-					    -or (($weeklyPattern[$dayIndex] -eq 4) -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
-				     )) {
-				    return $false;
-			    }
+                if ((1 -lt $schedule[$dayIndex].Count) -or !( `
+                    (($weeklyPattern[$dayIndex] -eq 0) -and ($schedule[$dayIndex].Count -eq 0)) `
+                    -or (($weeklyPattern[$dayIndex] -eq 1) -and ("TIDY" -in $schedule[$dayIndex])) `
+                    -or (($weeklyPattern[$dayIndex] -eq 2) -and ("RFSH" -in $schedule[$dayIndex])) `
+                    -or (($weeklyPattern[$dayIndex] -eq 3) -and ("1XWE" -in $schedule[$dayIndex])) `
+                )) {
+                    return $false;
+                }
 			}
-			$true;
+            Write-Host $weeklyPattern;
+			return $true;
 	})
 }
 
