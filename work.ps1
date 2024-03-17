@@ -1,5 +1,6 @@
 $inspect = $null;
 
+# TODO minimize waiting time once everything is implemented
 Function Wait {
     Sleep -Milliseconds 200;
     Add-Type -AssemblyName System.Windows.Forms;
@@ -160,6 +161,17 @@ Function Add-Housekeeping {
 	Add-Rfsh $tidyIndex $rfshIndex;
 }
 
+Function Skip-Last {
+    Param ([object[]]$array);
+    if ($array.Count -eq 0) {
+        throw "Can't remove from an empty array"
+    }
+    if ($array.Count -eq 1) {
+        Write-Output -NoEnumerate @();
+    }
+	Write-Output -NoEnumerate $array[-$schedule.Count..-2];
+}
+
 Function Array-Some {
     Param ([object[]]$array, $predicate);
     foreach ($item in $array) {
@@ -223,7 +235,7 @@ Function Print-Schedule {
 Function Parse-Schedule {
 	Param ([string[]]$housekeeping);
     $schedule = [System.Collections.ArrayList]@();
-	$null = 0..8 | % {
+	0..8 | % {
 		$dayIndex = $_;
         $dayServices = [System.Collections.ArrayList]@();
 		5..9 |
@@ -266,7 +278,7 @@ Function Are-Services-Weird {
 
 Function Is-Checkout-Weird {
 	Param ([string[][]]$schedule);
-	if (Array-Some ($schedule | Select-Object -SkipLast 1) {Param($x); "C/O " -in $x}) {
+	if (Array-Some (Skip-Last $schedule) {Param($x); "C/O " -in $x}) {
 		return $true;
 	}
 	if ($schedule.Count -eq 9) {
@@ -344,14 +356,11 @@ Function Add-Housekeeping-If-None {
 	if (Is-Checkout-Weird $schedule) {
 		return Write-Host "$roomNumber weird C/O";
 	}
-    Print-Schedule $schedule;
 	if ("C/O " -in $schedule[-1]) {
-		$schedule = $schedule | Select-Object -SkipLast 1;
-        Write-Host "Removing last from schedule"
-        Print-Schedule $schedule;
+		$schedule = Skip-Last $schedule;
 	}
     if ($schedule.Count -eq 0) {
-		return Write-Host "$roomNumber normal empty"
+        return Write-Host "$roomNumber normal empty"
     }
 	if (Are-Non-Checkouts-Weird $schedule) {
 		return Write-Host "$roomNumber weird TIDY, RFSH, or 1XWE";
