@@ -113,7 +113,7 @@ Function Copy-Housekeeping-Screen {
 	if ($result[1].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
-	$result;
+	Write-Output -NoEnumerate $result;
 }
 
 Function Add-Rfsh {
@@ -180,7 +180,7 @@ Function Trim-End {
     for ($i = 0; $i -le $lastIndex; $i++) {
         $null = $result.Add($array[$i]);
     }
-    $result;
+    Write-Output -NoEnumerate $result;
 }
 
 Function Parse-Services {
@@ -195,7 +195,7 @@ Function Parse-Services {
 	if ($services.Count -ne ($services | Select-Object -Unique).Count) {
 		throw "Should only have one of each type of available service";
 	}
-	$services;
+	Write-Output -NoEnumerate $services;
 }
 
 Function Parse-Days-Count {
@@ -209,7 +209,7 @@ Function Parse-Days-Count {
 	if (Array-Some $days {Param([string]$x); !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");}) {
 		throw "Unexpected value for a day";
 	}
-	$days.Count;
+	return $days.Count;
 }
 
 Function Print-Schedule {
@@ -344,13 +344,15 @@ Function Add-Housekeeping-If-None {
 	if (Is-Checkout-Weird $schedule) {
 		return Write-Host "$roomNumber weird C/O";
 	}
+    Print-Schedule $schedule;
 	if ("C/O " -in $schedule[-1]) {
 		$schedule = $schedule | Select-Object -SkipLast 1;
+        Write-Host "Removing last from schedule"
+        Print-Schedule $schedule;
 	}
     if ($schedule.Count -eq 0) {
 		return Write-Host "$roomNumber normal empty"
     }
-    Print-Schedule $schedule;
 	if (Are-Non-Checkouts-Weird $schedule) {
 		return Write-Host "$roomNumber weird TIDY, RFSH, or 1XWE";
 	}
