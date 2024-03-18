@@ -114,7 +114,7 @@ Function Copy-Housekeeping-Screen {
 	if ($result[1].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
-	Write-Output -NoEnumerate $result;
+	return Write-Output -NoEnumerate $result;
 }
 
 Function Add-Rfsh {
@@ -177,9 +177,9 @@ Function Skip-Last {
         throw "Can't remove from an empty array"
     }
     if ($array.Count -eq 1) {
-        Write-Output -NoEnumerate @();
+        return Write-Output -NoEnumerate @();
     }
-	Write-Output -NoEnumerate $array[-$schedule.Count..-2];
+	return Write-Output -NoEnumerate $array[-$schedule.Count..-2];
 }
 
 Function Array-Some {
@@ -202,7 +202,7 @@ Function Trim-End {
     for ($i = 0; $i -le $lastIndex; $i++) {
         $null = $result.Add($array[$i]);
     }
-    Write-Output -NoEnumerate $result;
+    return Write-Output -NoEnumerate $result;
 }
 
 Function Parse-Services {
@@ -217,7 +217,7 @@ Function Parse-Services {
 	if ($services.Count -ne ($services | Select-Object -Unique).Count) {
 		throw "Should only have one of each type of available service";
 	}
-	Write-Output -NoEnumerate $services;
+	return Write-Output -NoEnumerate $services;
 }
 
 Function Parse-Days-Count {
@@ -259,7 +259,8 @@ Function Parse-Schedule {
 			};
         $null = $schedule.Add($dayServices);
 	}
-	Write-Output -NoEnumerate (Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0});
+	return Write-Output -NoEnumerate `
+        (Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0});
 }
 
 Function Are-Services-Weird {
