@@ -138,7 +138,7 @@ Function Add-Rfsh {
 }
 
 Function Add-Housekeeping {
-    Param ([int]$roomNumber, [int]$daysCount);
+    Param ([int]$daysCount);
 	if ($daysCount -le 1) {
 	    throw "Someone who's about to check out doesn't need housekeeping";
 	}
@@ -148,7 +148,15 @@ Function Add-Housekeeping {
         Send-Keys "{F1}";
         Send-Keys "~";
         Send-Keys "{F10}";
-	    return Write-Host "$roomNumber added housekeeping";
+	    return;
+    }
+    if ($daysCount -eq 3) {
+        Send-Keys "A";
+        Send-Keys "T";
+        Send-Keys "{F1}";
+        Send-Keys "~";
+        Send-Keys "{F10}";
+        return;
     }
     # TODO
     throw "Unimplemented";
@@ -373,9 +381,10 @@ Function Add-Housekeeping-If-None {
 	    return Write-Host "$roomNumber weird unused services"
 	}
     Send-Keys "S";
-	Add-Housekeeping $roomNumber $daysCount
+	Add-Housekeeping $daysCount
     Send-Keys "{F4}";
     # TODO double check Add-Housekeeping
+    Write-Host "$roomNumber added housekeeping"
 }
 
 Function Main {
