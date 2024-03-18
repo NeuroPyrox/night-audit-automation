@@ -182,14 +182,26 @@ Function Add-Housekeeping {
         Add-First-Rfsh;
     } elseif ($scheduleCount -eq 9) {
         Fill-Tidys;
-        # TODO
-        throw "Need to implement removing tidys";
         Send-Keys "A";
         Send-Keys "R";
         Send-Keys "{F1}";
         Send-Keys "~";
         Send-Keys "N";
         Send-Keys "{F10}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{F2}";
+        Send-Keys "Y";
+        Send-Keys "M";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{F2}";
+        Send-Keys "Y";
+        Send-Keys "M";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{RIGHT}";
         Send-Keys "{RIGHT}";
         Send-Keys "{RIGHT}";
         Send-Keys "{F2}";
