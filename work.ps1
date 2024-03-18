@@ -267,8 +267,11 @@ Function Parse-Schedule {
 			};
         $null = $schedule.Add($dayServices);
 	}
-	return Write-Output -NoEnumerate `
-        (Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0});
+    $trimmed = Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0};
+    if ("C/O " -in $trimmed[-1]) {
+	    return Write-Output -NoEnumerate $trimmed;
+    }
+	return Write-Output -NoEnumerate $schedule;
 }
 
 Function Are-Services-Weird {
@@ -356,6 +359,7 @@ Function Is-Schedule-Empty {
 Function Add-Housekeeping-If-None {
 	Param ([int]$roomNumber);
 	$housekeeping = Copy-Housekeeping-Screen;
+    $Global:inspect = $housekeeping;
 	$services = Parse-Services $housekeeping;
 	if (Are-Services-Weird $services) {
 		return Write-Host "$roomNumber weird services";
