@@ -145,6 +145,22 @@ Function Fill-Tidys {
     Send-Keys "{F10}";
 }
 
+Function Add-First-Rfsh {
+    Send-Keys "A";
+    Send-Keys "R";
+    Send-Keys "{F1}";
+    Send-Keys "~";
+    Send-Keys "N";
+    Send-Keys "{F10}";
+    Send-Keys "{RIGHT}";
+    Send-Keys "{RIGHT}";
+    Send-Keys "{F2}";
+    Send-Keys "{UP}";
+    Send-Keys "{UP}";
+    Send-Keys "{F2}";
+    Send-Keys "{F10}";
+}
+
 Function Add-Housekeeping {
     Param ([int]$scheduleCount);
     # TODO implement more cases
@@ -157,38 +173,17 @@ Function Add-Housekeeping {
         Fill-Tidys;
     } elseif ($scheduleCount -eq 3) {
         Fill-Tidys;
-        # TODO
-        throw "Need to implement removing tidys";
-        Send-Keys "A";
-        Send-Keys "R";
-        Send-Keys "{F1}";
-        Send-Keys "~";
-        Send-Keys "N";
-        Send-Keys "{F10}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{F2}";
-        Send-Keys "{UP}";
-        Send-Keys "{UP}";
-        Send-Keys "{F2}";
-        Send-Keys "{F10}";
+        Add-First-Rfsh;
     } elseif ($scheduleCount -eq 4) {
         Fill-Tidys;
-        Send-Keys "A";
-        Send-Keys "R";
-        Send-Keys "{F1}";
-        Send-Keys "~";
-        Send-Keys "N";
-        Send-Keys "{F10}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{F2}";
-        Send-Keys "{UP}";
-        Send-Keys "{UP}";
-        Send-Keys "{F2}";
-        Send-Keys "{F10}";
+        Add-First-Rfsh;
+    } elseif ($scheduleCount -eq 5) {
+        Fill-Tidys;
+        Add-First-Rfsh;
     } elseif ($scheduleCount -eq 9) {
         Fill-Tidys;
+        # TODO
+        throw "Need to implement removing tidys";
         Send-Keys "A";
         Send-Keys "R";
         Send-Keys "{F1}";
