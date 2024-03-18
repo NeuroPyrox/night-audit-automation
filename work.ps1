@@ -117,26 +117,6 @@ Function Copy-Housekeeping-Screen {
 	return Write-Output -NoEnumerate $result;
 }
 
-Function Add-Rfsh {
-    Param ([int]$tidyIndex, [int]$rfshIndex);
-	for ($i = 0; i -lt $tidyIndex; i++) {
-		Send-Keys "{DOWN}";
-	}
-	Send-Keys "{F2}";
-	# TODO do we have a weekly dialog here?
-	for ($i = 0; i -lt $tidyIndex; i++) {
-		Send-Keys "{UP}";
-	}
-	for ($i = 0; i -lt $rfshIndex; i++) {
-		Send-Keys "{DOWN}";
-	}
-	Send-Keys "{F2}";
-	# TODO handle weekly dialog
-	for ($i = 0; i -lt $rfshIndex; i++) {
-		Send-Keys "{UP}";
-	}
-}
-
 Function Fill-Tidys {
     Send-Keys "A";
     Send-Keys "T";
@@ -209,24 +189,6 @@ Function Add-Housekeeping {
     } else {
         throw "Unimplemented";
     }
-    return;
-	if ($scheduleCount -lt 3) {
-	    return Write-Host "$roomNumber added housekeeping";
-	}
-    return Write-Host "$roomNumber needs housekeeping";
-	# TODO Add-Rfsh-Service
-	$housekeeping = Copy-Housekeeping-Screen;
-	$services = Parse-Services $housekeeping;
-	# TODO use correct IndexOf substitute for generic lists
-	$tidyIndex = [array]::IndexOf($services, "TIDY");
-	$rfshIndex = [array]::IndexOf($services, "RFSH");
-	# TODO navigate to first rfsh
-	Add-Rfsh $tidyIndex $rfshIndex;
-	if ($scheduleCount -lt 7) {
-	    return;
-	}
-	# TODO navigate to second rfsh
-	Add-Rfsh $tidyIndex $rfshIndex;
 }
 
 Function Skip-Last {
