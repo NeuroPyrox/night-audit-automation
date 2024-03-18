@@ -286,7 +286,10 @@ Function Are-Services-Weird {
 	$foundTidy = "TIDY             " -in $services;
 	$foundRfsh = "HOUSEKEEPING REFR" -in $services;
 	$found1xwe = "1XWEEK           " -in $services;
-	return !$foundCheckout -or (!$foundTidy -and $foundRfsh -and $found1xwe);
+	return !( `
+        ($foundCheckout -and !(!$foundTidy -and $foundRfsh -and $found1xwe)) `
+        -or (!$foundCheckout -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
+    );
 }
 
 Function Is-Checkout-Weird {
