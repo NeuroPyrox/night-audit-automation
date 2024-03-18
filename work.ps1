@@ -146,15 +146,15 @@ Function Fill-Tidys {
 }
 
 Function Add-Housekeeping {
-    Param ([int]$daysCount);
+    Param ([int]$scheduleCount);
     # TODO implement more cases
-	if ($daysCount -le 1) {
+	if ($scheduleCount -eq 0) {
 	    throw "Someone who's about to check out doesn't need housekeeping";
-	} elseif ($daysCount -eq 2) {
+	} elseif ($scheduleCount -eq 1) {
         Fill-Tidys;
-    } elseif ($daysCount -eq 3) {
+    } elseif ($scheduleCount -eq 2) {
         Fill-Tidys;
-    } elseif ($daysCount -eq 9) {
+    } elseif ($scheduleCount -eq 9) {
         # TODO find days that don't line up
         Fill-Tidys;
         Send-Keys "A";
@@ -170,7 +170,7 @@ Function Add-Housekeeping {
     } else {
         throw "Unimplemented";
     }
-	if ($daysCount -lt 3) {
+	if ($scheduleCount -lt 3) {
 	    return Write-Host "$roomNumber added housekeeping";
 	}
     return Write-Host "$roomNumber needs housekeeping";
@@ -182,7 +182,7 @@ Function Add-Housekeeping {
 	$rfshIndex = [array]::IndexOf($services, "RFSH");
 	# TODO navigate to first rfsh
 	Add-Rfsh $tidyIndex $rfshIndex;
-	if ($daysCount -lt 7) {
+	if ($scheduleCount -lt 7) {
 	    return;
 	}
 	# TODO navigate to second rfsh
@@ -392,7 +392,7 @@ Function Add-Housekeeping-If-None {
 	    return Write-Host "$roomNumber weird unused services"
 	}
     Send-Keys "S";
-	Add-Housekeeping $daysCount
+	Add-Housekeeping $schedule.Count
     Send-Keys "{F4}";
     # TODO double check Add-Housekeeping
     Write-Host "$roomNumber added housekeeping"
