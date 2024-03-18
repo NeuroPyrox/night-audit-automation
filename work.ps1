@@ -148,6 +148,7 @@ Function Fill-Tidys {
 Function Add-Housekeeping {
     Param ([int]$scheduleCount);
     # TODO implement more cases
+    # TODO make robust
 	if ($scheduleCount -eq 0) {
 	    throw "Someone who's about to check out doesn't need housekeeping";
 	} elseif ($scheduleCount -eq 1) {
@@ -156,6 +157,8 @@ Function Add-Housekeeping {
         Fill-Tidys;
     } elseif ($scheduleCount -eq 3) {
         Fill-Tidys;
+        # TODO
+        throw "Need to implement removing tidys";
         Send-Keys "A";
         Send-Keys "R";
         Send-Keys "{F1}";
@@ -185,7 +188,6 @@ Function Add-Housekeeping {
         Send-Keys "{F2}";
         Send-Keys "{F10}";
     } elseif ($scheduleCount -eq 9) {
-        # TODO find days that don't line up
         Fill-Tidys;
         Send-Keys "A";
         Send-Keys "R";
@@ -200,6 +202,7 @@ Function Add-Housekeeping {
     } else {
         throw "Unimplemented";
     }
+    return;
 	if ($scheduleCount -lt 3) {
 	    return Write-Host "$roomNumber added housekeeping";
 	}
@@ -410,7 +413,7 @@ Function Add-Housekeeping-If-None {
 		$schedule = Skip-Last $schedule;
 	}
     if ($schedule.Count -eq 0) {
-        return Write-Host "$roomNumber normal empty"
+        return Write-Host "$roomNumber normal"
     }
 	if (Are-Non-Checkouts-Weird $schedule) {
 		return Write-Host "$roomNumber weird TIDY, RFSH, or 1XWE";
