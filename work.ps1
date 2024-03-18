@@ -138,14 +138,24 @@ Function Add-Rfsh {
 }
 
 Function Add-Housekeeping {
-    Param ([int]$daysCount);
-	if ($daysCount -eq 0) {
-	    return;
+    Param ([int]$roomNumber, [int]$daysCount);
+	if ($daysCount -le 1) {
+	    throw "Someone who's about to check out doesn't need housekeeping";
 	}
-	# TODO Add-Tidy-Service
+    if ($daysCount -eq 2) {
+        Send-Keys "A";
+        Send-Keys "T";
+        Send-Keys "{F1}";
+        Send-Keys "~";
+        Send-Keys "{F10}";
+	    return Write-Host "$roomNumber added housekeeping";
+    }
+    # TODO
+    throw "Unimplemented";
 	if ($daysCount -lt 3) {
-	    return;
+	    return Write-Host "$roomNumber added housekeeping";
 	}
+    return Write-Host "$roomNumber needs housekeeping";
 	# TODO Add-Rfsh-Service
 	$housekeeping = Copy-Housekeeping-Screen;
 	$services = Parse-Services $housekeeping;
@@ -314,7 +324,6 @@ Function Are-Non-Checkouts-Weird {
                     return $false;
                 }
 			}
-            Write-Host $weeklyPattern;
 			return $true;
 	})
 }
@@ -362,9 +371,10 @@ Function Add-Housekeeping-If-None {
 	if (("TIDY" -in $services) -or ("RFSH" -in $services)) {
 	    return Write-Host "$roomNumber weird unused services"
 	}
-    Write-Host "$roomNumber needs housekeeping"
-	# TODO first make sure everything above works as expected
-	# Add-Housekeeping $daysCount
+    Send-Keys "S";
+	Add-Housekeeping $roomNumber $daysCount
+    Send-Keys "{F4}";
+    # TODO double check Add-Housekeeping
 }
 
 Function Main {
