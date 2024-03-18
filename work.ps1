@@ -137,29 +137,39 @@ Function Add-Rfsh {
 	}
 }
 
+Function Fill-Tidys {
+    Send-Keys "A";
+    Send-Keys "T";
+    Send-Keys "{F1}";
+    Send-Keys "~";
+    Send-Keys "{F10}";
+}
+
 Function Add-Housekeeping {
     Param ([int]$daysCount);
+    # TODO implement more cases
 	if ($daysCount -le 1) {
 	    throw "Someone who's about to check out doesn't need housekeeping";
-	}
-    if ($daysCount -eq 2) {
+	} elseif ($daysCount -eq 2) {
+        Fill-Tidys;
+    } elseif ($daysCount -eq 3) {
+        Fill-Tidys;
+    } elseif ($daysCount -eq 9) {
+        # TODO find days that don't line up
+        Fill-Tidys;
         Send-Keys "A";
-        Send-Keys "T";
+        Send-Keys "R";
         Send-Keys "{F1}";
         Send-Keys "~";
+        Send-Keys "N";
         Send-Keys "{F10}";
-	    return;
+        Send-Keys "{RIGHT}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{F2}";
+        Send-Keys "Y";
+    } else {
+        throw "Unimplemented";
     }
-    if ($daysCount -eq 3) {
-        Send-Keys "A";
-        Send-Keys "T";
-        Send-Keys "{F1}";
-        Send-Keys "~";
-        Send-Keys "{F10}";
-        return;
-    }
-    # TODO
-    throw "Unimplemented";
 	if ($daysCount -lt 3) {
 	    return Write-Host "$roomNumber added housekeeping";
 	}
@@ -318,13 +328,7 @@ Function Are-Non-Checkouts-Weird {
 				@(1, 1, 1, 3, 1, 1, 2, 1, 1), `
 				@(2, 1, 1, 1, 3, 1, 1, 2, 1), `
 				@(1, 2, 1, 1, 1, 3, 1, 1, 2), `
-				@(0, 0, 0, 0, 0, 0, 3, 0, 0), `
-				@(3, 0, 0, 0, 0, 0, 0, 3, 0), `
-				@(0, 3, 0, 0, 0, 0, 0, 0, 3), `
-				@(0, 0, 3, 0, 0, 0, 0, 0, 0), `
-				@(0, 0, 0, 3, 0, 0, 0, 0, 0), `
-				@(0, 0, 0, 0, 3, 0, 0, 0, 0), `
-				@(0, 0, 0, 0, 0, 3, 0, 0, 0) `
+				@(0, 0, 0, 0, 0, 0, 3, 0, 0) `
 				) {
 			# If there's no mismatching day
             Param($weeklyPattern);
