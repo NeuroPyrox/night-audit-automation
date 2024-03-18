@@ -154,6 +154,21 @@ Function Add-Housekeeping {
         Fill-Tidys;
     } elseif ($scheduleCount -eq 2) {
         Fill-Tidys;
+    } elseif ($scheduleCount -eq 4) {
+        Fill-Tidys;
+        Send-Keys "A";
+        Send-Keys "R";
+        Send-Keys "{F1}";
+        Send-Keys "~";
+        Send-Keys "N";
+        Send-Keys "{F10}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{RIGHT}";
+        Send-Keys "{F2}";
+        Send-Keys "{UP}";
+        Send-Keys "{UP}";
+        Send-Keys "{F2}";
+        Send-Keys "{F10}";
     } elseif ($scheduleCount -eq 9) {
         # TODO find days that don't line up
         Fill-Tidys;
