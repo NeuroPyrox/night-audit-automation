@@ -110,6 +110,7 @@ Function Copy-Housekeeping-Screen {
 	Move-Mouse 1250 400;
 	Left-Click;
     $result = (Get-Clipboard) -split "`n";
+    # TODO does removing this mess things up?
     $result = $result -split "`n";
 	if ($result[1].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
@@ -117,28 +118,18 @@ Function Copy-Housekeeping-Screen {
 	return Write-Output -NoEnumerate $result;
 }
 
+Function Send-Keys-Sequentially {
+    Param ([string]$keys);
+    ($keys -split ",") | % {Send-Keys $_;};
+}
+
 Function Fill-Tidys {
-    Send-Keys "A";
-    Send-Keys "T";
-    Send-Keys "{F1}";
-    Send-Keys "~";
-    Send-Keys "{F10}";
+    Send-Keys-Sequentially "A,T,{F1},~,{F10}";
 }
 
 Function Add-First-Rfsh {
-    Send-Keys "A";
-    Send-Keys "R";
-    Send-Keys "{F1}";
-    Send-Keys "~";
-    Send-Keys "N";
-    Send-Keys "{F10}";
-    Send-Keys "{RIGHT}";
-    Send-Keys "{RIGHT}";
-    Send-Keys "{F2}";
-    Send-Keys "{UP}";
-    Send-Keys "{UP}";
-    Send-Keys "{F2}";
-    Send-Keys "{F10}";
+    Send-Keys-Sequentially "A,R,{F1},~,N,{F10}";
+    Send-Keys-Sequentially "{RIGHT},{RIGHT},{F2},{UP},{UP},{F2},{F10}";
 }
 
 Function Add-Housekeeping {
@@ -162,30 +153,10 @@ Function Add-Housekeeping {
         Add-First-Rfsh;
     } elseif ($scheduleCount -eq 9) {
         Fill-Tidys;
-        Send-Keys "A";
-        Send-Keys "R";
-        Send-Keys "{F1}";
-        Send-Keys "~";
-        Send-Keys "N";
-        Send-Keys "{F10}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{F2}";
-        Send-Keys "Y";
-        Send-Keys "M";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{F2}";
-        Send-Keys "Y";
-        Send-Keys "M";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{RIGHT}";
-        Send-Keys "{F2}";
-        Send-Keys "Y";
+        Send-Keys-Sequentially "A,R,{F1},~,N,{F10}";
+        Send-Keys-Sequentially "{RIGHT},{RIGHT},{F2},Y";
+        Send-Keys-Sequentially "M,{RIGHT},{RIGHT},{F2},Y";
+        Send-Keys-Sequentially "M,{RIGHT},{RIGHT},{RIGHT},{RIGHT},{RIGHT},{RIGHT},{F2},Y";
     } else {
         throw "Unimplemented";
     }
