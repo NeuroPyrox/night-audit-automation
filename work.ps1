@@ -151,6 +151,12 @@ Function Add-Housekeeping {
     } elseif ($scheduleCount -eq 5) {
         Fill-Tidys;
         Add-First-Rfsh;
+    } elseif ($scheduleCount -eq 7) {
+        Fill-Tidys;
+        Send-Keys-Sequentially "A,R,{F1},~,N,{F10}";
+        Send-Keys-Sequentially "{RIGHT},{RIGHT},{F2}";
+        Send-Keys-Sequentially "{UP},{UP},{UP},{F2}";
+        Send-Keys-Sequentially "{RIGHT},{RIGHT},{RIGHT},{RIGHT},{F2},{F10}";
     } elseif ($scheduleCount -eq 9) {
         Fill-Tidys;
         Send-Keys-Sequentially "A,R,{F1},~,N,{F10}";
@@ -371,6 +377,7 @@ Function Add-Housekeeping-If-None {
     Write-Host "$roomNumber added housekeeping"
 }
 
+# TODO retry on errors
 Function Main {
     Param([int]$startRoom)
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
