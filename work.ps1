@@ -62,10 +62,20 @@ Function Retry-Get-Clipboard {
     }
     $result = Get-Clipboard;
     if ($result.Length -ne 0) {
-        $Global:inspect = $result;
-        throw "Different result after retrying! Please inspect."
+        return $result;
     }
-    return $result;
+    $result = Get-Clipboard;
+    if ($result.Length -ne 0) {
+        $Global:inspect = $result;
+        throw "Please implement one more retry because it worked."
+    }
+    Wait;
+    $result = Get-Clipboard;
+    if ($result.Length -ne 0) {
+        $Global:inspect = $result;
+        throw "Please implement one more retry because it worked."
+    }
+    throw "Expected a non-empty result";
 }
 
 Function Navigate-To-Room-Number {
@@ -80,7 +90,7 @@ Function Navigate-To-Room-Number {
 	Right-Click;
 	Move-Mouse 1250 260;
 	Left-Click;
-	$found = Get-Clipboard;
+	$found = Retry-Get-Clipboard;
 	if ($found -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
 		return $false;
