@@ -286,6 +286,7 @@ Function Are-Services-Weird {
 	return !( `
         ($foundCheckout -and !(!$foundTidy -and $foundRfsh -and $found1xwe)) `
         -or (!$foundCheckout -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
+        -or (!$foundCheckout -and $foundTidy -and $foundRfsh -and $found1xwe) `
     );
 }
 
