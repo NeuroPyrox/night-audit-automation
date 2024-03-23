@@ -66,11 +66,15 @@ Function Retry-Get-Clipboard {
     }
     $result = Get-Clipboard;
     if ($result.Length -ne 0) {
+        return $result;
+    }
+    $result = Get-Clipboard;
+    if ($result.Length -ne 0) {
         $Global:inspect = $result;
         throw "Please implement one more retry because it worked."
     }
     Wait;
-    $result = Get-Clipboard;
+    $result = (Get-Clipboard);
     if ($result.Length -ne 0) {
         $Global:inspect = $result;
         throw "Please implement one more retry because it worked."
