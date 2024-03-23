@@ -49,10 +49,23 @@ Function Left-Click {
     $SendMouseClick::mouse_event(0x00000004, 0, 0, 0, 0);
     Wait;
 }
-function Right-Click {
+Function Right-Click {
     $SendMouseClick::mouse_event(0x00000008, 0, 0, 0, 0);
     $SendMouseClick::mouse_event(0x00000010, 0, 0, 0, 0);
     Wait;
+}
+
+Function Retry-Get-Clipboard {
+    $result = Get-Clipboard;
+    if ($result.Length -ne 0) {
+        return $result;
+    }
+    $result = Get-Clipboard;
+    if ($result.Length -ne 0) {
+        $Global:inspect = $result;
+        throw "Different result after retrying! Please inspect."
+    }
+    return $result;
 }
 
 Function Navigate-To-Room-Number {
@@ -115,7 +128,7 @@ Function Copy-Housekeeping-Screen {
 	Right-Click;
 	Move-Mouse 1250 400;
 	Left-Click;
-    $clip = Get-Clipboard;
+    $clip = Retry-Get-Clipboard;
     $result = $clip -split "`n";
     try {
         $serviceDateCheck = $result[1].Substring(1, 12);
