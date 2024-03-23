@@ -96,6 +96,8 @@ Function Navigate-To-Room-Number {
 	Left-Click;
 	$found = Retry-Get-Clipboard;
 	if ($found -eq "NO MATCHES!                         ") {
+        $Global:inspect = @($found, (Get-Clipboard));
+        throw "Inspect not found";
 		Send-Keys "{F4}";
 		return $false;
 	}
@@ -104,7 +106,6 @@ Function Navigate-To-Room-Number {
 	    return $true;
 	}
     if ($found.Substring(0, 3) -ne "C/O") {
-        $Global:inspect = @($found, (Get-Clipboard));
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
 	Move-Mouse 710 280;
@@ -114,8 +115,10 @@ Function Navigate-To-Room-Number {
 	Right-Click;
 	Move-Mouse 1250 290;
 	Left-Click;
-	$found = Get-Clipboard;
+	$found = Retry-Get-Clipboard;
 	if ($found.Substring(0, 3) -eq "   ") {
+        $Global:inspect = @($found, (Get-Clipboard));
+        throw "Inspect not found";
 		Send-Keys "{F4}";
 		return $false;
 	}
@@ -139,13 +142,7 @@ Function Copy-Housekeeping-Screen {
 	Left-Click;
     $clip = Retry-Get-Clipboard;
     $result = $clip -split "`n";
-    try {
-        $serviceDateCheck = $result[1].Substring(1, 12);
-    } catch {
-        $Global:inspect = @($clip, $result, (Get-Clipboard));
-        throw "Please inspect this error";
-    }
-	if ($serviceDateCheck -ne "Service Date") {
+	if ($result[1].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
 	return Write-Output -NoEnumerate $result;
