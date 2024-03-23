@@ -109,10 +109,15 @@ Function Copy-Housekeeping-Screen {
 	Right-Click;
 	Move-Mouse 1250 400;
 	Left-Click;
-    $result = (Get-Clipboard) -split "`n";
-    # TODO does removing this mess things up?
-    $result = $result -split "`n";
-	if ($result[1].Substring(1, 12) -ne "Service Date") {
+    $clip = Get-Clipboard;
+    $result = $clip -split "`n";
+    try {
+        $serviceDateCheck = $result[1].Substring(1, 12);
+    } catch {
+        $Global:inspect = @($clip, $result, (Get-Clipboard));
+        throw "Please inspect this error";
+    }
+	if ($serviceDateCheck -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
 	return Write-Output -NoEnumerate $result;
