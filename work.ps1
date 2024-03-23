@@ -99,17 +99,12 @@ Function Navigate-To-Room-Number {
 		Send-Keys "{F4}";
 		return $false;
 	}
-    try {
-        $first3 = $found.Substring(0, 3);
-    } catch {
-        $Global:inspect = @($found, (Get-Clipboard));
-        throw "Inspect this error";
-    }
-	if ($first3 -eq $roomNumber.ToString()) {
+	if ($found.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
 	}
-    if ($first3 -ne "C/O") {
+    if ($found.Substring(0, 3) -ne "C/O") {
+        $Global:inspect = @($found, (Get-Clipboard));
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
 	Move-Mouse 710 280;
