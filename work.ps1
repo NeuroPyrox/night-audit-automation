@@ -355,7 +355,7 @@ Function Are-Non-Checkouts-Weird {
 
 Function Is-Schedule-Empty {
 	Param ([string[][]]$schedule);
-	if (("TIDY" -in $schedule[0]) -or ("RFSH" -in $schedule[0])) {
+	if (("TIDY" -in $schedule[0]) -or ("RFSH" -in $schedule[0]) -or ("1XWE" -in $schedule[0])) {
 	    return $false;
 	}
 	$schedule | % {
