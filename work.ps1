@@ -96,8 +96,6 @@ Function Navigate-To-Room-Number {
 	Left-Click;
 	$found = Retry-Get-Clipboard;
 	if ($found -eq "NO MATCHES!                         ") {
-        $Global:inspect = @($found, (Get-Clipboard));
-        throw "Inspect not found";
 		Send-Keys "{F4}";
 		return $false;
 	}
