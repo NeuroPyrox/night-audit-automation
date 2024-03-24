@@ -1,5 +1,39 @@
 $inspect = $null;
 
+Function Skip-Last {
+    Param ([object[]]$array);
+    if ($array.Count -eq 0) {
+        throw "Can't remove from an empty array"
+    }
+    if ($array.Count -eq 1) {
+        return Write-Output -NoEnumerate @();
+    }
+	return Write-Output -NoEnumerate $array[-$schedule.Count..-2];
+}
+
+Function Array-Some {
+    Param ([object[]]$array, $predicate);
+    foreach ($item in $array) {
+        if (&$predicate $item) {
+            return $true;
+        }
+    }
+    $false;
+}
+
+Function Trim-End {
+    Param ($array, $isEnd);
+    $lastIndex = $array.Count - 1;
+    while (&$isEnd $array[$lastIndex]) {
+        $lastIndex--;
+    }
+    $result = [System.Collections.ArrayList]@();
+    for ($i = 0; $i -le $lastIndex; $i++) {
+        $null = $result.Add($array[$i]);
+    }
+    return Write-Output -NoEnumerate $result;
+}
+
 # TODO minimize waiting time once everything is implemented
 Function Wait {
     Sleep -Milliseconds 200;
@@ -16,6 +50,10 @@ Function Send-Keys {
 	Param ([string]$keys);
     [System.Windows.Forms.SendKeys]::SendWait($keys)
     Wait;
+}
+Function Send-Keys-Sequentially {
+    Param ([string]$keys);
+    ($keys -split ",") | % {Send-Keys $_;};
 }
 
 $Mouse=@' 
@@ -128,6 +166,24 @@ Function Navigate-To-Room-Number {
 	throw "Expected either spaces, the same room number, or `"C/O`"";
 }
 
+Function Has-J8 {
+    Move-Mouse 660 470;
+	Down-Mouse;
+    Move-Mouse 1040 470;
+	Up-Mouse;
+	Right-Click;
+    Move-Mouse 1050 480;
+	$first6Requests = Retry-Get-Clipboard;
+    if ($first6Requests.Substring(20, 3) -eq "   ") {
+        foreach ($i in 0..4) {
+            throw "Implement checking if J8";
+        }
+    }
+    throw "Exit out of F3";
+    Send-Keys-Sequentially "E,pmont059,{~},{UP},{UP},{UP},{F3}";
+    throw "Implement copying and parsing";
+}
+
 Function Copy-Housekeeping-Screen {
 	Move-Mouse 10 385;
 	Down-Mouse;
@@ -142,11 +198,6 @@ Function Copy-Housekeeping-Screen {
 		throw "Not on the housekeeping screen";
 	}
 	return Write-Output -NoEnumerate $result;
-}
-
-Function Send-Keys-Sequentially {
-    Param ([string]$keys);
-    ($keys -split ",") | % {Send-Keys $_;};
 }
 
 Function Fill-Tidys {
@@ -192,40 +243,6 @@ Function Add-Housekeeping {
     } else {
         throw "Unimplemented";
     }
-}
-
-Function Skip-Last {
-    Param ([object[]]$array);
-    if ($array.Count -eq 0) {
-        throw "Can't remove from an empty array"
-    }
-    if ($array.Count -eq 1) {
-        return Write-Output -NoEnumerate @();
-    }
-	return Write-Output -NoEnumerate $array[-$schedule.Count..-2];
-}
-
-Function Array-Some {
-    Param ([object[]]$array, $predicate);
-    foreach ($item in $array) {
-        if (&$predicate $item) {
-            return $true;
-        }
-    }
-    $false;
-}
-
-Function Trim-End {
-    Param ($array, $isEnd);
-    $lastIndex = $array.Count - 1;
-    while (&$isEnd $array[$lastIndex]) {
-        $lastIndex--;
-    }
-    $result = [System.Collections.ArrayList]@();
-    for ($i = 0; $i -le $lastIndex; $i++) {
-        $null = $result.Add($array[$i]);
-    }
-    return Write-Output -NoEnumerate $result;
 }
 
 Function Parse-Services {
@@ -369,7 +386,6 @@ Function Is-Schedule-Empty {
 Function Add-Housekeeping-If-None {
 	Param ([int]$roomNumber);
 	$housekeeping = Copy-Housekeeping-Screen;
-    $Global:inspect = $housekeeping;
 	$services = Parse-Services $housekeeping;
 	if (Are-Services-Weird $services) {
 		return Write-Host "$roomNumber weird services";
@@ -404,6 +420,7 @@ Function Add-Housekeeping-If-None {
     Write-Host "$roomNumber added housekeeping"
 }
 
+# TODO track which rooms were found before but not anymore
 # TODO retry on errors
 Function Main {
     Param([int]$startRoom)
@@ -414,6 +431,9 @@ Function Main {
         $roomNumber = $roomNumbers[$roomIndex];
 	    $foundRoom = Navigate-To-Room-Number $roomNumber;
 	    if ($foundRoom) {
+            if (Has-J8) {
+                Write-Host "$roomNumber has a J8";
+            }
 		    Send-Keys "g";
 		    Add-Housekeeping-If-None $roomNumber;
 		    Send-Keys "{F4}";
