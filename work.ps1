@@ -166,7 +166,9 @@ Function Navigate-To-Room-Number {
 	throw "Expected either spaces, the same room number, or `"C/O`"";
 }
 
+# TODO implement
 Function Has-J8 {
+    return $false;
     Move-Mouse 660 470;
 	Down-Mouse;
     Move-Mouse 1040 470;
@@ -226,6 +228,9 @@ Function Add-Housekeeping {
         Fill-Tidys;
         Add-First-Rfsh;
     } elseif ($scheduleCount -eq 5) {
+        Fill-Tidys;
+        Add-First-Rfsh;
+    } elseif ($scheduleCount -eq 6) {
         Fill-Tidys;
         Add-First-Rfsh;
     } elseif ($scheduleCount -eq 7) {
