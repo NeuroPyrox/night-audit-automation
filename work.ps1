@@ -60,6 +60,151 @@ Function Parse-First-6-Requests {
     return $result;
 }
 
+Function Parse-Services {
+	Param ([string[]]$housekeeping);
+	$services = 5..9 | % {
+		if ($housekeeping[$_].Length -ne 72) {
+			throw "Expected 72 characters";
+		}
+		$housekeeping[$_].Substring(1, 17);
+	}
+	$services = Trim-End $services {
+        Param([string]$x);
+        return $x -eq "                 ";
+    };
+	if ($services.Count -ne ($services | Select-Object -Unique).Count) {
+		throw "Should only have one of each type of available service";
+	}
+	return Write-Output -NoEnumerate $services;
+}
+
+Function Parse-Days-Count {
+	Param ([string[]]$housekeeping);
+	$days = $housekeeping[0];
+	if ($days.Length -ne 72) {
+		throw "Expected 72 characters";
+	}
+	$days = 0..8 | % {$days.Substring(21 + (6 * $_), 3)};
+	$days = Trim-End $days {
+        Param($x);
+        return $x -eq "   ";
+    };
+	if (Array-Some $days {
+        Param([string]$x);
+        return !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
+    }) {
+		throw "Unexpected value for a day";
+	}
+	return $days.Count;
+}
+
+# Assumes services aren't weird
+Function Parse-Schedule {
+	Param ([string[]]$housekeeping);
+    $schedule = [System.Collections.ArrayList]@();
+	0..8 | % {
+		$dayIndex = $_;
+        $dayServices = [System.Collections.ArrayList]@();
+		5..9 |
+			% {$housekeeping[$_].Substring(20 + (6 * $dayIndex), 4)} |
+			where {$_ -ne "    "} |
+			% {
+				if (!($_ -in @("C/O ", "TIDY", "RFSH", "1XWE"))) {
+					throw "Unrecognized service";
+				}
+                $null = $dayServices.Add($_)
+			};
+        $null = $schedule.Add($dayServices);
+	}
+    $trimmed = Trim-End $schedule {
+        Param([string[]]$x);
+        return $x.Count -eq 0;
+    };
+    if ("C/O " -in $trimmed[-1]) {
+	    return Write-Output -NoEnumerate $trimmed;
+    }
+	return Write-Output -NoEnumerate $schedule;
+}
+
+Function Are-Services-Weird {
+	Param ([object[]]$services);
+    $options = @( `
+        "CHECK OUT        ", `
+        "TIDY             ", `
+        "HOUSEKEEPING REFR", `
+        "1XWEEK           " `
+    );
+	if (Array-Some $services {Param([string]$x); !($x -in $options)}) {
+		return $true;
+	}
+	$foundCheckout = "CHECK OUT        " -in $services;
+	$foundTidy = "TIDY             " -in $services;
+	$foundRfsh = "HOUSEKEEPING REFR" -in $services;
+	$found1xwe = "1XWEEK           " -in $services;
+	return !( `
+        ($foundCheckout -and !(!$foundTidy -and $foundRfsh -and $found1xwe)) `
+        -or (!$foundCheckout -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
+        -or (!$foundCheckout -and $foundTidy -and $foundRfsh -and $found1xwe) `
+    );
+}
+
+Function Is-Checkout-Weird {
+	Param ([string[][]]$schedule);
+	if (Array-Some (Skip-Last $schedule) {Param($x); "C/O " -in $x}) {
+		return $true;
+	}
+	if ($schedule.Count -eq 9) {
+		return ($schedule[-1].Count -ne 1) -and ("C/O " -in $schedule[-1]);
+	}
+	return ($schedule[-1].Count -ne 1) -or !("C/O " -in $schedule[-1]);
+}
+
+# TODO refactor to reflect 1 service per day
+# Assumes there won't be any unrecognized services
+Function Are-Non-Checkouts-Weird {
+	Param ([string[][]]$schedule);
+	# If there's no matching schedule
+	!(Array-Some @( `
+				@(1, 1, 2, 1, 1, 1, 3, 1, 1), `
+				@(3, 1, 1, 2, 1, 1, 1, 3, 1), `
+				@(1, 3, 1, 1, 2, 1, 1, 1, 3), `
+				@(1, 1, 3, 1, 1, 2, 1, 1, 1), `
+				@(1, 1, 1, 3, 1, 1, 2, 1, 1), `
+				@(2, 1, 1, 1, 3, 1, 1, 2, 1), `
+				@(1, 2, 1, 1, 1, 3, 1, 1, 2), `
+				@(0, 0, 0, 0, 0, 0, 3, 0, 0) `
+				) {
+			# If there's no mismatching day
+            Param($weeklyPattern);
+			for ($dayIndex = 0; $dayIndex -lt $schedule.Count; $dayIndex++) {
+			    # If the day doesn't match
+                if ((1 -lt $schedule[$dayIndex].Count) -or !( `
+                    (($weeklyPattern[$dayIndex] -eq 0) -and ($schedule[$dayIndex].Count -eq 0)) `
+                    -or (($weeklyPattern[$dayIndex] -eq 1) -and ("TIDY" -in $schedule[$dayIndex])) `
+                    -or (($weeklyPattern[$dayIndex] -eq 2) -and ("RFSH" -in $schedule[$dayIndex])) `
+                    -or (($weeklyPattern[$dayIndex] -eq 3) -and ("1XWE" -in $schedule[$dayIndex])) `
+                )) {
+                    return $false;
+                }
+			}
+			return $true;
+	})
+}
+
+# Assumes non-checkouts aren't weird
+Function Is-Schedule-Empty {
+	Param ([string[][]]$schedule);
+	if (("TIDY" -in $schedule[0]) -or ("RFSH" -in $schedule[0]) -or ("1XWE" -in $schedule[0])) {
+	    return $false;
+	}
+	$schedule | % {
+		if (("TIDY" -in $_) -or ("RFSH" -in $_)) {
+		    throw "Expected whole schedule to be empty if the first day was empty";
+		}
+	}
+	$true;
+}
+
 # TODO minimize waiting time once everything is implemented
 Function Wait {
     Sleep -Milliseconds 200;
@@ -158,6 +303,7 @@ Function Copy-From-Fosse {
     return Retry-Get-Clipboard;
 }
 
+# TODO only do 1 Copy-From-Fosse
 Function Navigate-To-Room-Number {
 	Param ([int]$roomNumber);
 	Send-Keys ($roomNumber.ToString());
@@ -256,156 +402,6 @@ Function Add-Housekeeping {
     } else {
         throw "Unimplemented";
     }
-}
-
-Function Parse-Services {
-	Param ([string[]]$housekeeping);
-	$services = 5..9 | % {
-		if ($housekeeping[$_].Length -ne 72) {
-			throw "Expected 72 characters";
-		}
-		$housekeeping[$_].Substring(1, 17);
-	}
-	$services = Trim-End $services {
-        Param([string]$x);
-        return $x -eq "                 ";
-    };
-	if ($services.Count -ne ($services | Select-Object -Unique).Count) {
-		throw "Should only have one of each type of available service";
-	}
-	return Write-Output -NoEnumerate $services;
-}
-
-Function Parse-Days-Count {
-	Param ([string[]]$housekeeping);
-	$days = $housekeeping[0];
-	if ($days.Length -ne 72) {
-		throw "Expected 72 characters";
-	}
-	$days = 0..8 | % {$days.Substring(21 + (6 * $_), 3)};
-	$days = Trim-End $days {
-        Param($x);
-        return $x -eq "   ";
-    };
-	if (Array-Some $days {
-        Param([string]$x);
-        return !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
-    }) {
-		throw "Unexpected value for a day";
-	}
-	return $days.Count;
-}
-
-Function Print-Schedule {
-	Param ([string[][]]$schedule);
-    $schedule | % {
-        Write-Host $_.Count, $_;
-    }
-}
-
-# Assumes services aren't weird
-Function Parse-Schedule {
-	Param ([string[]]$housekeeping);
-    $schedule = [System.Collections.ArrayList]@();
-	0..8 | % {
-		$dayIndex = $_;
-        $dayServices = [System.Collections.ArrayList]@();
-		5..9 |
-			% {$housekeeping[$_].Substring(20 + (6 * $dayIndex), 4)} |
-			where {$_ -ne "    "} |
-			% {
-				if (!($_ -in @("C/O ", "TIDY", "RFSH", "1XWE"))) {
-					throw "Unrecognized service";
-				}
-                $null = $dayServices.Add($_)
-			};
-        $null = $schedule.Add($dayServices);
-	}
-    $trimmed = Trim-End $schedule {
-        Param([string[]]$x);
-        return $x.Count -eq 0;
-    };
-    if ("C/O " -in $trimmed[-1]) {
-	    return Write-Output -NoEnumerate $trimmed;
-    }
-	return Write-Output -NoEnumerate $schedule;
-}
-
-Function Are-Services-Weird {
-	Param ([object[]]$services);
-    $options = @( `
-        "CHECK OUT        ", `
-        "TIDY             ", `
-        "HOUSEKEEPING REFR", `
-        "1XWEEK           " `
-    );
-	if (Array-Some $services {Param([string]$x); !($x -in $options)}) {
-		return $true;
-	}
-	$foundCheckout = "CHECK OUT        " -in $services;
-	$foundTidy = "TIDY             " -in $services;
-	$foundRfsh = "HOUSEKEEPING REFR" -in $services;
-	$found1xwe = "1XWEEK           " -in $services;
-	return !( `
-        ($foundCheckout -and !(!$foundTidy -and $foundRfsh -and $found1xwe)) `
-        -or (!$foundCheckout -and !$foundTidy -and !$foundRfsh -and $found1xwe) `
-        -or (!$foundCheckout -and $foundTidy -and $foundRfsh -and $found1xwe) `
-    );
-}
-
-Function Is-Checkout-Weird {
-	Param ([string[][]]$schedule);
-	if (Array-Some (Skip-Last $schedule) {Param($x); "C/O " -in $x}) {
-		return $true;
-	}
-	if ($schedule.Count -eq 9) {
-		return ($schedule[-1].Count -ne 1) -and ("C/O " -in $schedule[-1]);
-	}
-	return ($schedule[-1].Count -ne 1) -or !("C/O " -in $schedule[-1]);
-}
-
-# Assumes there won't be any unrecognized services
-Function Are-Non-Checkouts-Weird {
-	Param ([string[][]]$schedule);
-	# If there's no matching schedule
-	!(Array-Some @( `
-				@(1, 1, 2, 1, 1, 1, 3, 1, 1), `
-				@(3, 1, 1, 2, 1, 1, 1, 3, 1), `
-				@(1, 3, 1, 1, 2, 1, 1, 1, 3), `
-				@(1, 1, 3, 1, 1, 2, 1, 1, 1), `
-				@(1, 1, 1, 3, 1, 1, 2, 1, 1), `
-				@(2, 1, 1, 1, 3, 1, 1, 2, 1), `
-				@(1, 2, 1, 1, 1, 3, 1, 1, 2), `
-				@(0, 0, 0, 0, 0, 0, 3, 0, 0) `
-				) {
-			# If there's no mismatching day
-            Param($weeklyPattern);
-			for ($dayIndex = 0; $dayIndex -lt $schedule.Count; $dayIndex++) {
-			    # If the day doesn't match
-                if ((1 -lt $schedule[$dayIndex].Count) -or !( `
-                    (($weeklyPattern[$dayIndex] -eq 0) -and ($schedule[$dayIndex].Count -eq 0)) `
-                    -or (($weeklyPattern[$dayIndex] -eq 1) -and ("TIDY" -in $schedule[$dayIndex])) `
-                    -or (($weeklyPattern[$dayIndex] -eq 2) -and ("RFSH" -in $schedule[$dayIndex])) `
-                    -or (($weeklyPattern[$dayIndex] -eq 3) -and ("1XWE" -in $schedule[$dayIndex])) `
-                )) {
-                    return $false;
-                }
-			}
-			return $true;
-	})
-}
-
-Function Is-Schedule-Empty {
-	Param ([string[][]]$schedule);
-	if (("TIDY" -in $schedule[0]) -or ("RFSH" -in $schedule[0]) -or ("1XWE" -in $schedule[0])) {
-	    return $false;
-	}
-	$schedule | % {
-		if (("TIDY" -in $_) -or ("RFSH" -in $_)) {
-		    throw "Expected whole schedule to be empty if the first day was empty";
-		}
-	}
-	$true;
 }
 
 Function Add-Housekeeping-If-None {
