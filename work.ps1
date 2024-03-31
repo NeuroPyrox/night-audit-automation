@@ -399,20 +399,9 @@ Function Add-Housekeeping {
     # TODO make robust
 	if ($scheduleCount -eq 0) {
 	    throw "Someone who's about to check out doesn't need housekeeping";
-	} elseif ($scheduleCount -eq 1) {
+    } elseif ($scheduleCount -le 2) {
         Fill-Tidys;
-    } elseif ($scheduleCount -eq 2) {
-        Fill-Tidys;
-    } elseif ($scheduleCount -eq 3) {
-        Fill-Tidys;
-        Add-First-Rfsh;
-    } elseif ($scheduleCount -eq 4) {
-        Fill-Tidys;
-        Add-First-Rfsh;
-    } elseif ($scheduleCount -eq 5) {
-        Fill-Tidys;
-        Add-First-Rfsh;
-    } elseif ($scheduleCount -eq 6) {
+    } elseif ($scheduleCount -le 6) {
         Fill-Tidys;
         Add-First-Rfsh;
     } elseif ($scheduleCount -eq 7) {
