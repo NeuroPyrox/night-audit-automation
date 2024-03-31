@@ -468,21 +468,22 @@ Function Main {
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
 	    $foundRoom = Navigate-To-Room-Number $roomNumber;
-	    if ($foundRoom) {
-            if (Has-J8) {
-                Write-Host "$roomNumber has a J8";
-            }
-            # TODO skip J8 rooms
-		    Send-Keys "g";
-		    Add-Housekeeping-If-None $roomNumber;
-		    Send-Keys "{F4}";
-            Wait;
-            Wait;
-            Wait;
-            Wait;
-		    Send-Keys "{F4}";
-	    } else {
-            Write-Host "$roomNumber not found"
+        if (!$foundRoom) {
+            Write-Host "$roomNumber not found";
+            continue;
         }
+        if (Has-J8) {
+            Write-Host "$roomNumber declined housekeeping";
+		    Send-Keys "{F4}";
+            continue;
+        }
+		Send-Keys "g";
+		Add-Housekeeping-If-None $roomNumber;
+		Send-Keys "{F4}";
+        Wait;
+        Wait;
+        Wait;
+        Wait;
+		Send-Keys "{F4}";
     }
 }
