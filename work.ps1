@@ -34,6 +34,32 @@ Function Trim-End {
     return Write-Output -NoEnumerate $result;
 }
 
+Function Parse-First-6-Requests {
+	Param ([string]$raw);
+    if ($raw.Length -ne 23) {
+        throw "Expected 23 characters!";
+    }
+    $result = 0..5 | % {
+        $start = $_ * 4;
+        $item = $raw.Substring($start + 1, 2);
+        if (!($item -in (( `
+            "  ,A5,B5,D7,D9,E6,F2,G3,H1,I1,I2,J8,J9,K1,K2,K8,L2,L3,M1,M5,MK" `
+            + ",N1,N2,N3,N4,O9,P6,P8,R4,S5,S7,U2,V9,X1,X2,X4,X5,Y1,Y2,ZQ" `
+        ) -split ","))) {
+            throw "Unexpected request!";
+        }
+        return $item;
+    }
+    $result = Trim-End $result {
+        Param([string]$x);
+        return $x -eq "  ";
+    }
+    if ("  " -in $result) {
+        throw "Unexpected space between requests!"
+    }
+    return $result;
+}
+
 # TODO minimize waiting time once everything is implemented
 Function Wait {
     Sleep -Milliseconds 200;
@@ -168,20 +194,18 @@ Function Navigate-To-Room-Number {
 
 # TODO implement
 Function Has-J8 {
-    return $false;
     Move-Mouse 660 470;
 	Down-Mouse;
     Move-Mouse 1040 470;
 	Up-Mouse;
 	Right-Click;
     Move-Mouse 1050 480;
-	$first6Requests = Retry-Get-Clipboard;
-    if ($first6Requests.Substring(20, 3) -eq "   ") {
-        foreach ($i in 0..4) {
-            throw "Implement checking if J8";
-        }
+	Left-Click;
+	$first6Requests = Parse-First-6-Requests (Retry-Get-Clipboard);
+    if ($first6Requests.Count -lt 6) {
+        return "J8" -in $first6Requests;
     }
-    throw "Exit out of F3";
+    throw "Go to F3";
     Send-Keys-Sequentially "E,pmont059,{~},{UP},{UP},{UP},{F3}";
     throw "Implement copying and parsing";
 }
@@ -258,7 +282,10 @@ Function Parse-Services {
 		}
 		$housekeeping[$_].Substring(1, 17);
 	}
-	$services = Trim-End $services {Param($x); $x -eq "                 ";};
+	$services = Trim-End $services {
+        Param([string]$x);
+        return $x -eq "                 ";
+    };
 	if ($services.Count -ne ($services | Select-Object -Unique).Count) {
 		throw "Should only have one of each type of available service";
 	}
@@ -272,8 +299,14 @@ Function Parse-Days-Count {
 		throw "Expected 72 characters";
 	}
 	$days = 0..8 | % {$days.Substring(21 + (6 * $_), 3)};
-	$days = Trim-End $days {Param($x); $x -eq "   "};
-	if (Array-Some $days {Param([string]$x); !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");}) {
+	$days = Trim-End $days {
+        Param($x);
+        return $x -eq "   ";
+    };
+	if (Array-Some $days {
+        Param([string]$x);
+        return !($x -in "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
+    }) {
 		throw "Unexpected value for a day";
 	}
 	return $days.Count;
@@ -304,7 +337,10 @@ Function Parse-Schedule {
 			};
         $null = $schedule.Add($dayServices);
 	}
-    $trimmed = Trim-End $schedule {Param([string[]]$x); $x.Count -eq 0};
+    $trimmed = Trim-End $schedule {
+        Param([string[]]$x);
+        return $x.Count -eq 0;
+    };
     if ("C/O " -in $trimmed[-1]) {
 	    return Write-Output -NoEnumerate $trimmed;
     }
