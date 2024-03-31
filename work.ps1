@@ -146,19 +146,24 @@ Function Retry-Get-Clipboard {
     throw "Expected a non-empty result";
 }
 
+Function Copy-From-Fosse {
+    Param([int]$x1, [int]$x2, [int]$y1, [int]$y2, [int]$z1, [int]$z2);
+	Move-Mouse $x1 $x2;
+	Down-Mouse;
+	Move-Mouse $y1 $y2;
+	Up-Mouse;
+	Right-Click;
+	Move-Mouse $z1 $z2;
+	Left-Click;
+    return Retry-Get-Clipboard;
+}
+
 Function Navigate-To-Room-Number {
 	Param ([int]$roomNumber);
 	Send-Keys ($roomNumber.ToString());
 	Send-Keys "~";
 	Send-Keys "~";
-	Move-Mouse 710 250;
-	Down-Mouse;
-	Move-Mouse 1310 250;
-	Up-Mouse;
-	Right-Click;
-	Move-Mouse 1250 260;
-	Left-Click;
-	$found = Retry-Get-Clipboard;
+	$found = Copy-From-Fosse 710 250 1310 250 1250 260;
 	if ($found -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
 		return $false;
@@ -170,14 +175,7 @@ Function Navigate-To-Room-Number {
     if ($found.Substring(0, 3) -ne "C/O") {
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
-	Move-Mouse 710 280;
-	Down-Mouse;
-	Move-Mouse 1310 280;
-	Up-Mouse;
-	Right-Click;
-	Move-Mouse 1250 290;
-	Left-Click;
-	$found = Retry-Get-Clipboard;
+	$found = Copy-From-Fosse 710 280 1310 280 1250 290;
 	if ($found.Substring(0, 3) -eq "   ") {
 		Send-Keys "{F4}";
 		return $false;
@@ -194,14 +192,7 @@ Function Navigate-To-Room-Number {
 
 # TODO implement
 Function Has-J8 {
-    Move-Mouse 660 470;
-	Down-Mouse;
-    Move-Mouse 1040 470;
-	Up-Mouse;
-	Right-Click;
-    Move-Mouse 1050 480;
-	Left-Click;
-	$first6Requests = Parse-First-6-Requests (Retry-Get-Clipboard);
+	$first6Requests = Parse-First-6-Requests (Copy-From-Fosse 660 470 1040 470 1050 480);
     if ($first6Requests.Count -lt 6) {
         return "J8" -in $first6Requests;
     }
@@ -211,14 +202,7 @@ Function Has-J8 {
 }
 
 Function Copy-Housekeeping-Screen {
-	Move-Mouse 10 385;
-	Down-Mouse;
-	Move-Mouse 1240 660;
-	Up-Mouse;
-	Right-Click;
-	Move-Mouse 1250 400;
-	Left-Click;
-    $clip = Retry-Get-Clipboard;
+    $clip = Copy-From-Fosse 10 385 1240 660 1250 400;
     $result = $clip -split "`n";
 	if ($result[1].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
@@ -475,6 +459,7 @@ Function Main {
             if (Has-J8) {
                 Write-Host "$roomNumber has a J8";
             }
+            # TODO skip J8 rooms
 		    Send-Keys "g";
 		    Add-Housekeeping-If-None $roomNumber;
 		    Send-Keys "{F4}";
