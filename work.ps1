@@ -38,7 +38,7 @@ Function Assert-Valid-Request-Codes {
     Param([string[]]$requestCodes);
     $requestCodes | % {
         if (!($_ -in (( `
-            "A5,B5,D7,D9,E6,F2,G3,H1,I1,I2,J8,J9,K1,K2,K8,L2,L3,M1,M5,MK" `
+            "A5,B5,D7,D9,E1,E6,F2,G3,H1,I1,I2,J8,J9,K1,K2,K8,L2,L3,M1,M5,MK" `
             + ",N1,N2,N3,N4,O9,P6,P8,R4,S5,S7,U2,V9,X1,X2,X4,X5,Y1,Y2,ZQ" `
         ) -split ","))) {
             throw "Unexpected request code: $_";
@@ -474,6 +474,7 @@ Function Main {
         }
         if (Has-J8) {
             Write-Host "$roomNumber declined housekeeping";
+            # TODO make sure they don't have housekeeping
 		    Send-Keys "{F4}";
             continue;
         }
