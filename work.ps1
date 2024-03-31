@@ -8,7 +8,7 @@ Function Skip-Last {
     if ($array.Count -eq 1) {
         return Write-Output -NoEnumerate @();
     }
-	return Write-Output -NoEnumerate $array[-$schedule.Count..-2];
+	return Write-Output -NoEnumerate $array[-$array.Count..-2];
 }
 
 Function Array-Some {
@@ -34,29 +34,51 @@ Function Trim-End {
     return Write-Output -NoEnumerate $result;
 }
 
+Function Assert-Valid-Request-Codes {
+    Param([string[]]$requestCodes);
+    $requestCodes | % {
+        if (!($_ -in (( `
+            "A5,B5,D7,D9,E6,F2,G3,H1,I1,I2,J8,J9,K1,K2,K8,L2,L3,M1,M5,MK" `
+            + ",N1,N2,N3,N4,O9,P6,P8,R4,S5,S7,U2,V9,X1,X2,X4,X5,Y1,Y2,ZQ" `
+        ) -split ","))) {
+            throw "Unexpected request code: $_";
+        }
+    }
+}
+
 Function Parse-First-6-Requests {
 	Param ([string]$raw);
     if ($raw.Length -ne 23) {
         throw "Expected 23 characters!";
     }
     $result = 0..5 | % {
-        $start = $_ * 4;
-        $item = $raw.Substring($start + 1, 2);
-        if (!($item -in (( `
-            "  ,A5,B5,D7,D9,E6,F2,G3,H1,I1,I2,J8,J9,K1,K2,K8,L2,L3,M1,M5,MK" `
-            + ",N1,N2,N3,N4,O9,P6,P8,R4,S5,S7,U2,V9,X1,X2,X4,X5,Y1,Y2,ZQ" `
-        ) -split ","))) {
-            throw "Unexpected request!";
-        }
-        return $item;
+        return $raw.Substring((4 * $_) + 1, 2);
     }
     $result = Trim-End $result {
         Param([string]$x);
         return $x -eq "  ";
     }
+    Assert-Valid-Request-Codes $result;
     if ("  " -in $result) {
         throw "Unexpected space between requests!"
     }
+    return $result;
+}
+
+Function Parse-F3-Requests {
+	Param ([string]$raw);
+    $withSpaces = 0..8 | % {
+        return $raw.Substring(80 * $_, 2);
+    };
+    $withUnderscore = Trim-End $withSpaces {
+        Param([string]$x);
+        return $x -eq "  ";
+    };
+    if ($withUnderscore[-1] -ne "__") {
+        throw "Expected `"__`"!"
+    }
+    $result = Skip-Last $withUnderscore;
+    Assert-Valid-Request-Codes $result;
     return $result;
 }
 
@@ -339,12 +361,15 @@ Function Navigate-To-Room-Number {
 # TODO implement
 Function Has-J8 {
 	$first6Requests = Parse-First-6-Requests (Copy-From-Fosse 660 470 1040 470 1050 480);
-    if ($first6Requests.Count -lt 6) {
-        return "J8" -in $first6Requests;
+    if ("J8" -in $first6Requests) {
+        return $true;
     }
-    throw "Go to F3";
-    Send-Keys-Sequentially "E,pmont059,{~},{UP},{UP},{UP},{F3}";
-    throw "Implement copying and parsing";
+    if ($first6Requests.Count -lt 6) {
+        return $false;
+    }
+    Send-Keys-Sequentially "E,pmont059,~,{UP},{UP},{UP},{F3}";
+    $f3Requests = Parse-F3-Requests (Copy-From-Fosse 300 300 330 530 340 540);
+    throw "Implement checking";
 }
 
 Function Copy-Housekeeping-Screen {
