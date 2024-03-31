@@ -358,7 +358,6 @@ Function Navigate-To-Room-Number {
 	throw "Expected either spaces, the same room number, or `"C/O`"";
 }
 
-# TODO implement
 Function Has-J8 {
 	$first6Requests = Parse-First-6-Requests (Copy-From-Fosse 660 470 1040 470 1050 480);
     if ("J8" -in $first6Requests) {
@@ -369,7 +368,11 @@ Function Has-J8 {
     }
     Send-Keys-Sequentially "E,pmont059,~,{UP},{UP},{UP},{F3}";
     $f3Requests = Parse-F3-Requests (Copy-From-Fosse 300 300 330 530 340 540);
-    throw "Implement checking";
+    if ($f3Requests[0] -in $first6Requests) {
+        Send-Keys "{F4}";
+        return "J8" -in $f3Requests;
+    }
+    throw "Implement scrolling up";
 }
 
 Function Copy-Housekeeping-Screen {
