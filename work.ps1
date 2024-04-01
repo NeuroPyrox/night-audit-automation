@@ -383,6 +383,13 @@ Function Has-J8 {
     throw "Implement scrolling up";
 }
 
+Function Check-Housekeeping-Comments {
+    $comments = Copy-From-Fosse 270 300 680 300 690 310;
+    if ($comments -ne "                         ") {
+        throw "Implement housekeeping comments";
+    }
+}
+
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 10 385 1240 660 1250 400;
     $result = $clip -split "`n";
@@ -403,8 +410,6 @@ Function Add-First-Rfsh {
 
 Function Add-Housekeeping {
     Param ([int]$scheduleCount);
-    # TODO implement more cases
-    # TODO make robust
 	if ($scheduleCount -eq 0) {
 	    throw "Someone who's about to check out doesn't need housekeeping";
     } elseif ($scheduleCount -le 2) {
@@ -487,7 +492,7 @@ Function Main {
             continue;
         }
 		Send-Keys "g";
-        # TODO check housekeeping comments
+        Check-Housekeeping-Comments;
 		Add-Housekeeping-If-None $roomNumber;
 		Send-Keys "{F4}";
         Wait;
