@@ -238,15 +238,24 @@ Function Wait {
     }
 }
 
+$last10Keys = @("", "", "", "", "", "", "", "", "", "");
+$last10KeysIndex = 0;
 Add-Type -AssemblyName System.Windows.Forms
 Function Send-Keys {
 	Param ([string]$keys);
-    [System.Windows.Forms.SendKeys]::SendWait($keys)
+    $Global:last10Keys[$Global:last10KeysIndex] = $keys;
+    $Global:last10KeysIndex = ($Global:last10KeysIndex + 1) % 10;
+    [System.Windows.Forms.SendKeys]::SendWait($keys);
     Wait;
 }
 Function Send-Keys-Sequentially {
     Param ([string]$keys);
     ($keys -split ",") | % {Send-Keys $_;};
+}
+Function Unroll-Last-10-Keys {
+    return Write-Output -NoEnumerate (0..9 | % {
+        return $Global:last10Keys[($Global:last10KeysIndex + $_) % 10];
+    });
 }
 
 $Mouse=@' 
@@ -479,6 +488,7 @@ Function Main {
             continue;
         }
 		Send-Keys "g";
+        # TODO check housekeeping comments
 		Add-Housekeeping-If-None $roomNumber;
 		Send-Keys "{F4}";
         Wait;
