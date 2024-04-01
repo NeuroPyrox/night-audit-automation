@@ -356,11 +356,6 @@ Function Navigate-To-Room-Number {
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
     $row1 = $found.Substring(80, 36);
-	if ($row1.Substring(0, 3) -eq "   ") {
-        throw "I forgot what this case is for";
-		Send-Keys "{F4}";
-		return $false;
-	}
 	if ($row1.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
@@ -368,7 +363,7 @@ Function Navigate-To-Room-Number {
     if ($row1.Substring(0, 3) -eq "C/O") {
 	    throw "Unhandled case of 2 or more checkouts";
     }
-	throw "Expected either spaces, the same room number, or `"C/O`"";
+	throw "Expected the same room number or `"C/O`"";
 }
 
 Function Has-J8 {
