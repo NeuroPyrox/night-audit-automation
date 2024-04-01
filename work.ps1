@@ -106,7 +106,9 @@ Function Parse-Days-Count {
 	if ($days.Length -ne 72) {
 		throw "Expected 72 characters";
 	}
-	$days = 0..8 | % {$days.Substring(21 + (6 * $_), 3)};
+	$days = 0..8 | % {
+        return $days.Substring(21 + (6 * $_), 3);
+    };
 	$days = Trim-End $days {
         Param($x);
         return $x -eq "   ";
@@ -340,28 +342,30 @@ Function Navigate-To-Room-Number {
 	Send-Keys ($roomNumber.ToString());
 	Send-Keys "~";
 	Send-Keys "~";
-	$found = Copy-From-Fosse 710 250 1310 250 1250 260;
-	if ($found -eq "NO MATCHES!                         ") {
+	$found = Copy-From-Fosse 710 250 1310 500 1250 510;
+    $row0 = $found.Substring(0, 36);
+	if ($row0 -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
 		return $false;
 	}
-	if ($found.Substring(0, 3) -eq $roomNumber.ToString()) {
+	if ($row0.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
 	}
-    if ($found.Substring(0, 3) -ne "C/O") {
+    if ($row0.Substring(0, 3) -ne "C/O") {
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
-	$found = Copy-From-Fosse 710 280 1310 280 1250 290;
-	if ($found.Substring(0, 3) -eq "   ") {
+    $row1 = $found.Substring(80, 36);
+	if ($row1.Substring(0, 3) -eq "   ") {
+        throw "I forgot what this case is for";
 		Send-Keys "{F4}";
 		return $false;
 	}
-	if ($found.Substring(0, 3) -eq $roomNumber.ToString()) {
+	if ($row1.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
 	}
-    if ($found.Substring(0, 3) -eq "C/O") {
+    if ($row1.Substring(0, 3) -eq "C/O") {
 	    throw "Unhandled case of 2 or more checkouts";
     }
 	throw "Expected either spaces, the same room number, or `"C/O`"";
