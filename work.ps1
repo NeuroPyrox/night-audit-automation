@@ -162,7 +162,7 @@ Function Parse-Schedule {
             return "More than one service on a day!";
         }
     }
-    return $schedule;
+    return Write-Output -NoEnumerate $schedule;
 }
 
 Function Are-Services-Weird {
@@ -442,18 +442,18 @@ Function Add-Housekeeping-If-None {
 	$housekeeping = Copy-Housekeeping-Screen;
 	$services = Parse-Services $housekeeping;
 	if (Are-Services-Weird $services) {
-		return Write-Host "$roomNumber weird";
+		return Write-Host "$roomNumber weird services";
 	}
 	$daysCount = Parse-Days-Count $housekeeping;
     $schedule = Parse-Schedule $housekeeping;
     if ($schedule -eq "More than one service on a day!") {
-        return Write-Host "$roomNumber weird";
+        return Write-Host "$roomNumber weird overlapping services";
     }
 	if ($daysCount -ne $schedule.Count) {
 		throw "Expected days and schedule to be the same length";
 	}
 	if (($schedule.Count -lt 9) -and ($schedule[-1] -ne "C/O ")) {
-		return Write-Host "$roomNumber weird";
+		return Write-Host "$roomNumber weird checkout";
 	}
 	if ("C/O " -in $schedule[-1]) {
 		$schedule = Skip-Last $schedule;
@@ -462,7 +462,7 @@ Function Add-Housekeeping-If-None {
         return Write-Host "$roomNumber normal"
     }
 	if (Are-Non-Checkouts-Weird $schedule) {
-		return Write-Host "$roomNumber weird";
+		return Write-Host "$roomNumber weird schedule";
 	}
     # TODO rethink this check
 	if (!(Is-Schedule-Empty $schedule)) {
