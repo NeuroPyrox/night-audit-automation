@@ -159,7 +159,7 @@ Function Parse-Schedule {
         } elseif ($schedule[$i].Count -eq 1) {
             $schedule[$i] = $schedule[$i][0];
         } else {
-            return "More than one service on a day!";
+            return "Overlapping services!";
         }
     }
     return Write-Output -NoEnumerate $schedule;
@@ -385,13 +385,6 @@ Function Has-J8 {
     throw "Implement scrolling up";
 }
 
-Function Check-Housekeeping-Comments {
-    $comments = Copy-From-Fosse 270 300 680 300 690 310;
-    if ($comments -ne "                         ") {
-        throw "Implement housekeeping comments";
-    }
-}
-
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 10 385 1240 660 1250 400;
     $result = $clip -split "`n";
@@ -399,6 +392,36 @@ Function Copy-Housekeeping-Screen {
 		throw "Not on the housekeeping screen";
 	}
 	return Write-Output -NoEnumerate $result;
+}
+
+Function Has-Housekeeping {
+	$housekeeping = Copy-Housekeeping-Screen;
+    $schedule = Parse-Schedule $housekeeping;
+    if ($schedule -eq "Overlapping services!") {
+        return $true;
+    }
+	if ((Parse-Days-Count $housekeeping) -ne $schedule.Count) {
+		throw "Expected days and schedule to be the same length";
+	}
+	if (($schedule.Count -lt 9) -and ($schedule[-1] -ne "C/O ")) {
+        # Even if it's all spaces,
+        # we count deviations from the expected pattern of a trailing "C/O "
+		return $true;
+	}
+	if ($schedule[-1] -eq "C/O ") {
+		$schedule = Skip-Last $schedule;
+	}
+    return Array-Some $schedule {
+        Param([string]$x);
+        return $x -ne "    ";
+    }
+}
+
+Function Check-Housekeeping-Comments {
+    $comments = Copy-From-Fosse 270 300 680 300 690 310;
+    if ($comments -ne "                         ") {
+        throw "Implement housekeeping comments";
+    }
 }
 
 Function Fill-Tidys {
@@ -436,7 +459,7 @@ Function Add-Housekeeping {
     }
 }
 
-# TODO factor out a function to classify the schedule
+# TODO remove input
 Function Add-Housekeeping-If-None {
 	Param ([int]$roomNumber);
 	$housekeeping = Copy-Housekeeping-Screen;
@@ -444,18 +467,17 @@ Function Add-Housekeeping-If-None {
 	if (Are-Services-Weird $services) {
 		return Write-Host "$roomNumber weird services";
 	}
-	$daysCount = Parse-Days-Count $housekeeping;
     $schedule = Parse-Schedule $housekeeping;
-    if ($schedule -eq "More than one service on a day!") {
+    if ($schedule -eq "Overlapping services!") {
         return Write-Host "$roomNumber weird overlapping services";
     }
-	if ($daysCount -ne $schedule.Count) {
+	if ((Parse-Days-Count $housekeeping) -ne $schedule.Count) {
 		throw "Expected days and schedule to be the same length";
 	}
 	if (($schedule.Count -lt 9) -and ($schedule[-1] -ne "C/O ")) {
 		return Write-Host "$roomNumber weird checkout";
 	}
-	if ("C/O " -in $schedule[-1]) {
+	if ($schedule[-1] -eq "C/O ") {
 		$schedule = Skip-Last $schedule;
 	}
     if ($schedule.Count -eq 0) {
@@ -472,10 +494,9 @@ Function Add-Housekeeping-If-None {
 	    return Write-Host "$roomNumber weird unused services"
 	}
     Send-Keys "S";
-	Add-Housekeeping $schedule.Count
+	Add-Housekeeping $schedule.Count;
     Send-Keys "{F4}";
-    # TODO double check Add-Housekeeping
-    Write-Host "$roomNumber added housekeeping"
+    Write-Host "$roomNumber added housekeeping";
 }
 
 # TODO track which rooms were found before but not anymore
@@ -493,12 +514,22 @@ Function Main {
             continue;
         }
         if (Has-J8) {
-            Write-Host "$roomNumber declined housekeeping";
-            throw "Implement making sure there's no housekeeping";
+		    Send-Keys "g";
+            if (Has-Housekeeping) {
+                Write-Host "$roomNumber declined housekeeping, but has housekeeping";
+            } else {
+                Write-Host "$roomNumber declined housekeeping";
+            }
+		    Send-Keys "{F4}";
+            Wait;
+            Wait;
+            Wait;
+            Wait;
 		    Send-Keys "{F4}";
             continue;
         }
 		Send-Keys "g";
+        # TODO only use one copy
         Check-Housekeeping-Comments;
 		Add-Housekeeping-If-None $roomNumber;
 		Send-Keys "{F4}";
