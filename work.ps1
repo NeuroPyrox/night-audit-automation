@@ -465,38 +465,37 @@ Function Add-Housekeeping-If-None {
 	$housekeeping = Copy-Housekeeping-Screen;
 	$services = Parse-Services $housekeeping;
 	if (Are-Services-Weird $services) {
-		return Write-Host "$roomNumber weird services";
+		return "weird services";
 	}
     $schedule = Parse-Schedule $housekeeping;
     if ($schedule -eq "Overlapping services!") {
-        return Write-Host "$roomNumber weird overlapping services";
+        return "weird overlapping services";
     }
 	if ((Parse-Days-Count $housekeeping) -ne $schedule.Count) {
 		throw "Expected days and schedule to be the same length";
 	}
 	if (($schedule.Count -lt 9) -and ($schedule[-1] -ne "C/O ")) {
-		return Write-Host "$roomNumber weird checkout";
+		return "weird checkout";
 	}
 	if ($schedule[-1] -eq "C/O ") {
 		$schedule = Skip-Last $schedule;
 	}
     if ($schedule.Count -eq 0) {
-        return Write-Host "$roomNumber normal"
+        return "normal";
     }
 	if (Are-Non-Checkouts-Weird $schedule) {
-		return Write-Host "$roomNumber weird schedule";
+		return "weird schedule";
 	}
-    # TODO rethink this check
 	if (!(Is-Schedule-Empty $schedule)) {
-		return Write-Host "$roomNumber normal"
+		return "normal";
 	}
 	if (("TIDY" -in $services) -or ("RFSH" -in $services)) {
-	    return Write-Host "$roomNumber weird unused services"
+	    return "weird unused services";
 	}
     Send-Keys "S";
 	Add-Housekeeping $schedule.Count;
     Send-Keys "{F4}";
-    Write-Host "$roomNumber added housekeeping";
+    Write-Host "added housekeeping";
 }
 
 # TODO track which rooms were found before but not anymore
@@ -531,7 +530,8 @@ Function Main {
 		Send-Keys "g";
         # TODO only use one copy
         Check-Housekeeping-Comments;
-		Add-Housekeeping-If-None $roomNumber;
+		$status = Add-Housekeeping-If-None;
+        Write-Host "$roomNumber $status";
 		Send-Keys "{F4}";
         Wait;
         Wait;
