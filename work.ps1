@@ -495,7 +495,7 @@ Function Add-Housekeeping-If-None {
     Send-Keys "S";
 	Add-Housekeeping $schedule.Count;
     Send-Keys "{F4}";
-    Write-Host "added housekeeping";
+    return "added housekeeping";
 }
 
 # TODO track which rooms were found before but not anymore
