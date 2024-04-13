@@ -418,9 +418,10 @@ Function Has-Housekeeping {
 }
 
 Function Check-Housekeeping-Comments {
+	Param ([int]$roomNumber);
     $comments = Copy-From-Fosse 270 300 680 300 690 310;
     if ($comments -ne "                         ") {
-        throw "Implement housekeeping comments";
+        Write-Host "$roomNumber comments: $comments";
     }
 }
 
@@ -514,6 +515,7 @@ Function Main {
         }
         if (Has-J8) {
 		    Send-Keys "g";
+            Check-Housekeeping-Comments $roomNumber;
             if (Has-Housekeeping) {
                 Write-Host "$roomNumber declined housekeeping, but has housekeeping";
             } else {
@@ -529,7 +531,7 @@ Function Main {
         }
 		Send-Keys "g";
         # TODO only use one copy
-        Check-Housekeeping-Comments;
+        Check-Housekeeping-Comments $roomNumber;
 		$status = Add-Housekeeping-If-None;
         Write-Host "$roomNumber $status";
 		Send-Keys "{F4}";
