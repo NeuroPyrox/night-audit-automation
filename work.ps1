@@ -448,7 +448,7 @@ Function Add-Housekeeping {
         Send-Keys-Sequentially "{RIGHT},{RIGHT},{F2}";
         Send-Keys-Sequentially "{UP},{UP},{UP},{F2}";
         Send-Keys-Sequentially "{RIGHT},{RIGHT},{RIGHT},{RIGHT},{F2},{F10}";
-    } elseif ($scheduleCount -eq 9) {
+    } elseif ($scheduleCount -le 9) {
         Fill-Tidys;
         Send-Keys-Sequentially "A,R,{F1},~,N,{F10}";
         Send-Keys-Sequentially "{RIGHT},{RIGHT},{F2},Y";
