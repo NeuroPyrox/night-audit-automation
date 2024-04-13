@@ -187,7 +187,6 @@ Function Are-Services-Weird {
     );
 }
 
-# TODO refactor to reflect 1 service per day
 # Assumes there won't be any unrecognized services
 Function Are-Non-Checkouts-Weird {
 	Param ([string[]]$schedule);
@@ -338,7 +337,6 @@ Function Copy-From-Fosse {
     return Retry-Get-Clipboard;
 }
 
-# TODO only do 1 Copy-From-Fosse
 Function Navigate-To-Room-Number {
 	Param ([int]$roomNumber);
 	Send-Keys ($roomNumber.ToString());
@@ -513,27 +511,20 @@ Function Main {
             Write-Host "$roomNumber not found";
             continue;
         }
+        $hasJ8 = Has-J8;
+		Send-Keys "g";
+        # TODO only use one copy
+        Check-Housekeeping-Comments $roomNumber;
         if (Has-J8) {
-		    Send-Keys "g";
-            Check-Housekeeping-Comments $roomNumber;
             if (Has-Housekeeping) {
                 Write-Host "$roomNumber declined housekeeping, but has housekeeping";
             } else {
                 Write-Host "$roomNumber declined housekeeping";
             }
-		    Send-Keys "{F4}";
-            Wait;
-            Wait;
-            Wait;
-            Wait;
-		    Send-Keys "{F4}";
-            continue;
+        } else {
+	        $status = Add-Housekeeping-If-None;
+            Write-Host "$roomNumber $status";
         }
-		Send-Keys "g";
-        # TODO only use one copy
-        Check-Housekeeping-Comments $roomNumber;
-		$status = Add-Housekeeping-If-None;
-        Write-Host "$roomNumber $status";
 		Send-Keys "{F4}";
         Wait;
         Wait;
