@@ -84,7 +84,7 @@ Function Parse-F3-Requests {
 
 Function Parse-Services {
 	Param ([string[]]$housekeeping);
-	$services = 5..9 | % {
+	$services = 8..12 | % {
 		if ($housekeeping[$_].Length -ne 72) {
 			throw "Expected 72 characters";
 		}
@@ -102,7 +102,7 @@ Function Parse-Services {
 
 Function Parse-Days-Count {
 	Param ([string[]]$housekeeping);
-	$days = $housekeeping[0];
+	$days = $housekeeping[3];
 	if ($days.Length -ne 72) {
 		throw "Expected 72 characters";
 	}
@@ -129,7 +129,7 @@ Function Parse-Unflattened-Schedule {
 	0..8 | % {
 		$dayIndex = $_;
         $dayServices = [System.Collections.ArrayList]@();
-		5..9 |
+		8..12 |
 			% {$housekeeping[$_].Substring(20 + (6 * $dayIndex), 4)} |
 			where {$_ -ne "    "} |
 			% {
@@ -384,16 +384,25 @@ Function Has-J8 {
 }
 
 Function Copy-Housekeeping-Screen {
-    $clip = Copy-From-Fosse 10 385 1240 660 1250 400;
+    $clip = Copy-From-Fosse 270 300 1240 660 1250 400;
     $result = $clip -split "`n";
-	if ($result[1].Substring(1, 12) -ne "Service Date") {
+    $Global:inspect = $result;
+	if ($result[4].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
 	return Write-Output -NoEnumerate $result;
 }
 
+Function Check-Housekeeping-Comments {
+	Param ([string[]]$housekeeping, [int]$roomNumber);
+    $comments = $housekeeping[0].Substring(0, 25);
+    if ($comments -ne "                         ") {
+        Write-Host "$roomNumber comments: $comments";
+    }
+}
+
 Function Has-Housekeeping {
-	$housekeeping = Copy-Housekeeping-Screen;
+	Param ([string[]]$housekeeping);
     $schedule = Parse-Schedule $housekeeping;
     if ($schedule -eq "Overlapping services!") {
         return $true;
@@ -412,14 +421,6 @@ Function Has-Housekeeping {
     return Array-Some $schedule {
         Param([string]$x);
         return $x -ne "    ";
-    }
-}
-
-Function Check-Housekeeping-Comments {
-	Param ([int]$roomNumber);
-    $comments = Copy-From-Fosse 270 300 680 300 690 310;
-    if ($comments -ne "                         ") {
-        Write-Host "$roomNumber comments: $comments";
     }
 }
 
@@ -458,10 +459,8 @@ Function Add-Housekeeping {
     }
 }
 
-# TODO remove input
 Function Add-Housekeeping-If-None {
-	Param ([int]$roomNumber);
-	$housekeeping = Copy-Housekeeping-Screen;
+	Param ([string[]]$housekeeping);
 	$services = Parse-Services $housekeeping;
 	if (Are-Services-Weird $services) {
 		return "weird services";
@@ -513,16 +512,17 @@ Function Main {
         }
         $hasJ8 = Has-J8;
 		Send-Keys "g";
+        $housekeeping = Copy-Housekeeping-Screen;
         # TODO only use one copy
-        Check-Housekeeping-Comments $roomNumber;
-        if (Has-J8) {
-            if (Has-Housekeeping) {
+        Check-Housekeeping-Comments $housekeeping $roomNumber;
+        if ($hasJ8) {
+            if (Has-Housekeeping $housekeeping) {
                 Write-Host "$roomNumber declined housekeeping, but has housekeeping";
             } else {
                 Write-Host "$roomNumber declined housekeeping";
             }
         } else {
-	        $status = Add-Housekeeping-If-None;
+	        $status = Add-Housekeeping-If-None $housekeeping;
             Write-Host "$roomNumber $status";
         }
 		Send-Keys "{F4}";
