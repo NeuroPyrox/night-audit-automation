@@ -230,7 +230,11 @@ Function Is-Schedule-Empty {
 	$true;
 }
 
-# TODO minimize waiting time once everything is implemented
+# TODO minimize waiting time
+# Criterion for telling if we can save time:
+#   For now, reduce time until there's about 1 error per run
+# Later, for each error caused by going too fast:
+#   Record the location of the error, the wait time, and the time spent restarting.
 Function Wait {
     Sleep -Milliseconds 200;
     Add-Type -AssemblyName System.Windows.Forms;
@@ -460,7 +464,6 @@ Function Add-Housekeeping {
 }
 
 Function Add-Housekeeping-If-None {
-	Param ([string[]]$housekeeping);
 	$services = Parse-Services $housekeeping;
 	if (Are-Services-Weird $services) {
 		return "weird services";
@@ -496,6 +499,31 @@ Function Add-Housekeeping-If-None {
     return "added housekeeping";
 }
 
+Function Process-Room {
+	Param ([int]$roomNumber);
+    $hasJ8 = Has-J8;
+	Send-Keys "g";
+    $housekeeping = Copy-Housekeeping-Screen;
+    Check-Housekeeping-Comments $housekeeping $roomNumber;
+    if ($hasJ8) {
+        if (Has-Housekeeping $housekeeping) {
+            Write-Host "$roomNumber declined housekeeping, but has housekeeping";
+        } else {
+            Write-Host "$roomNumber declined housekeeping";
+        }
+    } else {
+	    $status = Add-Housekeeping-If-None $housekeeping;
+        Write-Host "$roomNumber $status";
+    }
+	Send-Keys "{F4}";
+    # TODO minimize number of waits
+    Wait;
+    Wait;
+    Wait;
+    Wait;
+	Send-Keys "{F4}";
+}
+
 # TODO track which rooms were found before but not anymore
 # TODO retry on errors
 Function Main {
@@ -506,30 +534,10 @@ Function Main {
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
 	    $foundRoom = Navigate-To-Room-Number $roomNumber;
-        if (!$foundRoom) {
-            Write-Host "$roomNumber not found";
-            continue;
-        }
-        $hasJ8 = Has-J8;
-		Send-Keys "g";
-        $housekeeping = Copy-Housekeeping-Screen;
-        # TODO only use one copy
-        Check-Housekeeping-Comments $housekeeping $roomNumber;
-        if ($hasJ8) {
-            if (Has-Housekeeping $housekeeping) {
-                Write-Host "$roomNumber declined housekeeping, but has housekeeping";
-            } else {
-                Write-Host "$roomNumber declined housekeeping";
-            }
+        if ($foundRoom) {
+            Process-Room $roomNumber;
         } else {
-	        $status = Add-Housekeeping-If-None $housekeeping;
-            Write-Host "$roomNumber $status";
+            Write-Host "$roomNumber not found";
         }
-		Send-Keys "{F4}";
-        Wait;
-        Wait;
-        Wait;
-        Wait;
-		Send-Keys "{F4}";
     }
 }
