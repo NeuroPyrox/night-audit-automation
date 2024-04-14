@@ -360,6 +360,10 @@ Function Navigate-To-Room-Number {
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
     $row1 = $found.Substring(80, 36);
+    if ($row1 -eq "                                    ") {
+		Send-Keys "{F4}";
+		return $false;
+    }
 	if ($row1.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
