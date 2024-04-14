@@ -390,7 +390,6 @@ Function Has-J8 {
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 270 300 1240 660 1250 400;
     $result = $clip -split "`n";
-    $Global:inspect = $result;
 	if ($result[4].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
@@ -524,20 +523,38 @@ Function Process-Room {
 	Send-Keys "{F4}";
 }
 
-# TODO track which rooms were found before but not anymore
 # TODO retry on errors
+# TODO make sure it gets detected in $foundRooms when a guest checks out
+$foundRooms = [System.Collections.ArrayList]@();
 Function Main {
-    Param([int]$startRoom)
+    Param([int]$startRoom);
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
+    if ($Global:foundRooms.Count -lt $roomNumbers.IndexOf($startRoom)) {
+        throw "Haven't processed $($roomNumbers[$Global:foundRooms.Count]) yet!";
+    } elseif ($roomNumbers.IndexOf($startRoom) -eq -1) {
+        throw "$startRoom is not a valid room number!";
+    }
     Move-Mouse 10 385;
     Left-Click;
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
-	    $foundRoom = Navigate-To-Room-Number $roomNumber;
+        $foundRoom = Navigate-To-Room-Number $roomNumber;
         if ($foundRoom) {
             Process-Room $roomNumber;
         } else {
             Write-Host "$roomNumber not found";
+        }
+        # Don't record a room as done until we process it
+        if ($Global:foundRooms.Count -lt $roomIndex) {
+            throw "Unreachable branch!";
+        } elseif ($Global:foundRooms.Count -eq $roomIndex) {
+            $null = $Global:foundRooms.Add($foundRoom);
+        } elseif (0 -le $roomIndex) {
+            if ($Global:foundRooms[$roomIndex] -ne $foundRoom) {
+                throw "Different result for finding room: $roomNumber!";
+            }
+        } else {
+            throw "Unreachable branch!";
         }
     }
 }
