@@ -239,7 +239,7 @@ Function Is-Schedule-Empty {
 #   the time since the last error, and the resulting time spent.
 # Highest wait time for errors:
 #   A 50ms
-#   B 100ms
+#   B 150ms
 Function Wait {
     Sleep -Milliseconds 100;
     Add-Type -AssemblyName System.Windows.Forms;
@@ -532,6 +532,7 @@ Function Process-Room {
 	Send-Keys "{F4}";
     Wait; # Wait B
     Wait;
+    Wait;
 	Send-Keys "{F4}";
 }
 
@@ -551,9 +552,8 @@ Function Process-Room-With-Retry {
     }
 }
 
-if ($foundRooms -eq $null) {
-    $foundRooms = [System.Collections.ArrayList]@();
-}
+# TODO only initialize if uninitialized
+$foundRooms = [System.Collections.ArrayList]@();
 Function Main {
     Param([int]$startRoom);
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
