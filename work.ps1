@@ -532,7 +532,22 @@ Function Process-Room {
 	Send-Keys "{F4}";
 }
 
-# TODO retry on errors
+# TODO implement time recording
+# TODO implement restarts
+Function Process-Room-With-Retry {
+	Param ([int]$roomNumber);
+    try {
+        Process-Room $roomNumber;
+    } catch {
+        if ($_.Exception.Message -eq "Safeguard: stop program when mouse moves to edge of screen") {
+            throw $_;
+        } else {
+            $Global:inspect = $_;
+            throw "Unrecognized error";
+        }
+    }
+}
+
 $foundRooms = [System.Collections.ArrayList]@();
 Function Main {
     Param([int]$startRoom);
@@ -546,7 +561,7 @@ Function Main {
     Left-Click;
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
-        Process-Room $roomNumber;
+        Process-Room-With-Retry $roomNumber;
         # Don't record a room as done until we process it
         if ($Global:foundRooms.Count -lt $roomIndex) {
             throw "Unreachable branch!";
