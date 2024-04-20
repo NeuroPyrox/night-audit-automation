@@ -554,6 +554,13 @@ Function Process-Room-With-Retry {
             throw $_;
         } elseif ($_.Exception.Message -eq "You cannot call a method on a null-valued expression.") {
             throw $_;
+        } elseif ($_.Exception.Message -eq "Expected to find a checked out room if the room number doesn't match") {
+            if ((Retry-Get-Clipboard) -eq "!ERROR=21  (Invalid line number or label)") {
+                throw "Fosse ran out of memory";
+            } else {
+                $Global:inspect = $_;
+                throw "Unrecognized error. Type `$inspect for more details.";
+            }
         } else {
             $Global:inspect = $_;
             throw "Unrecognized error. Type `$inspect for more details.";
