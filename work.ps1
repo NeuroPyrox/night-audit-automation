@@ -542,7 +542,7 @@ Function Process-Room {
 
 # TODO implement time recording
 # TODO implement restarts
-Function Process-Room-With-Retry {
+Function Retry-Process-Room {
 	Param ([int]$roomNumber);
     try {
         Process-Room $roomNumber;
@@ -582,7 +582,7 @@ Function Main {
     Left-Click;
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
-        Process-Room-With-Retry $roomNumber;
+        Retry-Process-Room $roomNumber;
         # Don't record a room as done until we process it
         if ($Global:foundRooms.Count -lt $roomIndex) {
             throw "Unreachable branch!";
