@@ -509,6 +509,10 @@ Function Add-Housekeeping-If-None {
 
 Function Process-Room {
 	Param ([int]$roomNumber);
+    $foundRoom = Navigate-To-Room-Number $roomNumber;
+    if (!$foundRoom) {
+        return Write-Host "$roomNumber not found";
+    }
     $hasJ8 = Has-J8;
 	Send-Keys "g";
     $housekeeping = Copy-Housekeeping-Screen;
@@ -542,12 +546,7 @@ Function Main {
     Left-Click;
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
-        $foundRoom = Navigate-To-Room-Number $roomNumber;
-        if ($foundRoom) {
-            Process-Room $roomNumber;
-        } else {
-            Write-Host "$roomNumber not found";
-        }
+        Process-Room $roomNumber;
         # Don't record a room as done until we process it
         if ($Global:foundRooms.Count -lt $roomIndex) {
             throw "Unreachable branch!";
