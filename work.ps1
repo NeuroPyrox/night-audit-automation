@@ -234,10 +234,12 @@ Function Is-Schedule-Empty {
 # Criterion for telling if we can save time:
 #   Choose the wait time with the lowest resulting time spent per time since last error.
 #   Use Thompson sampling
-# Later, for each error caused by going too fast:
+# After we implement time recording, for each error caused by going too fast:
 #   Record the location of the error, the wait time,
 #   the time since the last error, and the resulting time spent.
-# A 50ms n/a n/a
+# Highest wait time for errors:
+#   A 50ms
+#   B 100ms
 Function Wait {
     Sleep -Milliseconds 100;
     Add-Type -AssemblyName System.Windows.Forms;
@@ -529,6 +531,7 @@ Function Process-Room {
     }
 	Send-Keys "{F4}";
     Wait; # Wait B
+    Wait;
 	Send-Keys "{F4}";
 }
 
@@ -543,7 +546,7 @@ Function Process-Room-With-Retry {
             throw $_;
         } else {
             $Global:inspect = $_;
-            throw "Unrecognized error";
+            throw "Unrecognized error. Type `$inspect for more details.";
         }
     }
 }
