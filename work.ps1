@@ -552,6 +552,8 @@ Function Process-Room-With-Retry {
             throw $_;
         } elseif ($_.Exception.Message.Substring(0, 24) -eq "Unexpected request code:") {
             throw $_;
+        } elseif ($_.Exception.Message -eq "You cannot call a method on a null-valued expression.") {
+            throw $_;
         } else {
             $Global:inspect = $_;
             throw "Unrecognized error. Type `$inspect for more details.";
