@@ -237,6 +237,7 @@ Function Is-Schedule-Empty {
 # Later, for each error caused by going too fast:
 #   Record the location of the error, the wait time,
 #   the time since the last error, and the resulting time spent.
+# A 50ms n/a n/a
 Function Wait {
     Sleep -Milliseconds 100;
     Add-Type -AssemblyName System.Windows.Forms;
@@ -338,6 +339,7 @@ Function Copy-From-Fosse {
 	Move-Mouse $y1 $y2;
 	Up-Mouse;
 	Right-Click;
+    Wait; # Wait A 
 	Move-Mouse $z1 $z2;
 	Left-Click;
     return Retry-Get-Clipboard;
@@ -359,6 +361,7 @@ Function Navigate-To-Room-Number {
 	    return $true;
 	}
     if ($row0.Substring(0, 3) -ne "C/O") {
+        $Global:inspect = @($row0, $roomNumber);
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
     $row1 = $found.Substring(80, 36);
@@ -521,11 +524,7 @@ Function Process-Room {
         Write-Host "$roomNumber $status";
     }
 	Send-Keys "{F4}";
-    # TODO minimize number of waits
-    Wait;
-    Wait;
-    Wait;
-    Wait;
+    Wait; # Wait B
 	Send-Keys "{F4}";
 }
 
