@@ -232,11 +232,13 @@ Function Is-Schedule-Empty {
 
 # TODO minimize waiting time
 # Criterion for telling if we can save time:
-#   For now, reduce time until there's about 1 error per run
+#   Choose the wait time with the lowest resulting time spent per time since last error.
+#   Use Thompson sampling
 # Later, for each error caused by going too fast:
-#   Record the location of the error, the wait time, and the time spent restarting.
+#   Record the location of the error, the wait time,
+#   the time since the last error, and the resulting time spent.
 Function Wait {
-    Sleep -Milliseconds 200;
+    Sleep -Milliseconds 100;
     Add-Type -AssemblyName System.Windows.Forms;
     $x = [System.Windows.Forms.Cursor]::Position.X;
     $y = [System.Windows.Forms.Cursor]::Position.Y;
@@ -528,7 +530,6 @@ Function Process-Room {
 }
 
 # TODO retry on errors
-# TODO make sure it gets detected in $foundRooms when a guest checks out
 $foundRooms = [System.Collections.ArrayList]@();
 Function Main {
     Param([int]$startRoom);
