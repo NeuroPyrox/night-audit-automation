@@ -239,7 +239,7 @@ Function Is-Schedule-Empty {
 #   the time since the last error, and the resulting time spent.
 # Highest wait time for errors:
 #   A 50ms
-#   B 150ms
+#   B 300ms
 Function Wait {
     Sleep -Milliseconds 100;
     Add-Type -AssemblyName System.Windows.Forms;
@@ -531,6 +531,9 @@ Function Process-Room {
     }
 	Send-Keys "{F4}";
     Wait; # Wait B
+    Wait;
+    Wait;
+    Wait;
     Wait;
     Wait;
 	Send-Keys "{F4}";
