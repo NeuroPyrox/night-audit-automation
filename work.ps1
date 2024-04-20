@@ -38,8 +38,8 @@ Function Assert-Valid-Request-Codes {
     Param([string[]]$requestCodes);
     $requestCodes | % {
         if (!($_ -in (( `
-            "A5,A9,B4,B5,D7,D9,E1,E6,F2,G3,H1,H2,I1,I2,J8,J9,K1,K2,K8,L2,L3,M1,M5,M8" `
-            + ",MK,N1,N2,N3,N4,O9,P6,P8,R1,R3,R4,S5,S7,U2,V9,X1,X2,X4,X5,Y1,Y2,ZQ" `
+            "A0,A5,A9,B4,B5,D7,D9,E1,E6,F2,G3,H1,H2,I1,I2,J8,J9,K1,K2,K8,L2,L3,M1,M5" `
+            + ",M8,MK,N1,N2,N3,N4,O9,P6,P8,R1,R3,R4,S5,S7,U2,V9,X1,X2,X4,X5,Y1,Y2,ZQ" `
         ) -split ","))) {
             throw "Unexpected request code: $_";
         }
