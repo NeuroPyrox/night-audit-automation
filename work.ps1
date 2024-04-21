@@ -568,8 +568,9 @@ Function Retry-Process-Room {
     }
 }
 
-# TODO only initialize if uninitialized
-$foundRooms = [System.Collections.ArrayList]@();
+if ($foundRooms -eq $null) {
+    $foundRooms = [System.Collections.ArrayList]@();
+}
 Function Main {
     Param([int]$startRoom);
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
@@ -587,6 +588,7 @@ Function Main {
         if ($Global:foundRooms.Count -lt $roomIndex) {
             throw "Unreachable branch!";
         } elseif ($Global:foundRooms.Count -eq $roomIndex) {
+            # TODO fix $foundRoom
             $null = $Global:foundRooms.Add($foundRoom);
         } elseif (0 -le $roomIndex) {
             if ($Global:foundRooms[$roomIndex] -ne $foundRoom) {
