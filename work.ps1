@@ -513,7 +513,8 @@ Function Process-Room {
 	Param ([int]$roomNumber);
     $foundRoom = Navigate-To-Room-Number $roomNumber;
     if (!$foundRoom) {
-        return Write-Host "$roomNumber not found";
+        Write-Host "$roomNumber not found";
+        return $foundRoom;
     }
     $hasJ8 = Has-J8;
 	Send-Keys "g";
@@ -538,6 +539,7 @@ Function Process-Room {
     Wait;
     Wait;
 	Send-Keys "{F4}";
+    return $foundRoom;
 }
 
 # TODO implement time recording
@@ -545,7 +547,7 @@ Function Process-Room {
 Function Retry-Process-Room {
 	Param ([int]$roomNumber);
     try {
-        Process-Room $roomNumber;
+        return Process-Room $roomNumber;
     } catch {
         # Warning: high coupling
         if ($_.Exception.Message -eq "Safeguard: stop program when mouse moves to edge of screen") {
@@ -583,12 +585,11 @@ Function Main {
     Left-Click;
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
-        Retry-Process-Room $roomNumber;
+        $foundRoom = Retry-Process-Room $roomNumber;
         # Don't record a room as done until we process it
         if ($Global:foundRooms.Count -lt $roomIndex) {
             throw "Unreachable branch!";
         } elseif ($Global:foundRooms.Count -eq $roomIndex) {
-            # TODO fix $foundRoom
             $null = $Global:foundRooms.Add($foundRoom);
         } elseif (0 -le $roomIndex) {
             if ($Global:foundRooms[$roomIndex] -ne $foundRoom) {
