@@ -516,11 +516,6 @@ Function Add-Housekeeping-If-None {
 
 Function Process-Room {
 	Param ([int]$roomNumber);
-    $foundRoom = Navigate-To-Room-Number $roomNumber;
-    if (!$foundRoom) {
-        Write-Host "$roomNumber not found";
-        return $foundRoom;
-    }
     $hasJ8 = Has-J8;
 	Send-Keys "g";
     $housekeeping = Copy-Housekeeping-Screen;
@@ -538,27 +533,6 @@ Function Process-Room {
 	Send-Keys "{F4}";
     Extend-Wait 300;
 	Send-Keys "{F4}";
-    return $foundRoom;
-}
-
-# TODO implement restarts
-Function Retry-Process-Room {
-	Param ([int]$roomNumber);
-    try {
-        return Process-Room $roomNumber;
-    } catch {
-        if ($_.Exception.Message -eq "Expected to find a checked out room if the room number doesn't match") {
-            if ((Retry-Get-Clipboard) -eq "!ERROR=21  (Invalid line number or label)") {
-                throw "Fosse ran out of memory";
-            } elseif ((Retry-Get-Clipboard).Substring(363, 16) -eq "Room/Stay Detail") {
-                throw "Implement restarting";
-            } else {
-                throw $_;
-            }
-        } else {
-            throw $_;
-        }
-    }
 }
 
 if ($foundRooms -eq $null) {
@@ -581,7 +555,12 @@ Function Main {
     Left-Click;
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
-        $foundRoom = Retry-Process-Room $roomNumber;
+        $foundRoom = Navigate-To-Room-Number $roomNumber;
+        if ($foundRoom) {
+            Process-Room $roomNumber;
+        } else {
+            Write-Host "$roomNumber not found";
+        }
         # Don't record a room as done until we process it
         if ($Global:foundRooms.Count -lt $roomIndex) {
             throw "Unreachable branch!";
