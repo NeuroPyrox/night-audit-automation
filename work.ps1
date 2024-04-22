@@ -239,15 +239,21 @@ Function Is-Schedule-Empty {
 #   the time since the last error, and the resulting time spent.
 # Highest wait time for errors:
 #   A 50ms
-#   B 350ms
-Function Wait {
-    Sleep -Milliseconds 100;
+#   B 30ms
+#   C 320ms
+Function Safe-Sleep {
+    Param ([int]$milliseconds);
+    Sleep -Milliseconds $milliseconds;
     Add-Type -AssemblyName System.Windows.Forms;
     $x = [System.Windows.Forms.Cursor]::Position.X;
     $y = [System.Windows.Forms.Cursor]::Position.Y;
     if (($x -eq 0) -or ($x -eq 1439) -or ($y -eq 0) -or ($y -eq 899)) {
         throw "Safeguard: stop program when mouse moves to edge of screen";
     }
+}
+
+Function Wait {
+    Safe-Sleep 100; # Sleep A
 }
 
 $last10Keys = @("", "", "", "", "", "", "", "", "", "");
@@ -341,7 +347,7 @@ Function Copy-From-Fosse {
 	Move-Mouse $y1 $y2;
 	Up-Mouse;
 	Right-Click;
-    Wait; # Wait A 
+    Safe-Sleep 100; # Wait B
 	Move-Mouse $z1 $z2;
 	Left-Click;
     return Retry-Get-Clipboard;
@@ -531,41 +537,27 @@ Function Process-Room {
         Write-Host "$roomNumber $status";
     }
 	Send-Keys "{F4}";
-    Wait; # Wait B
-    Wait;
-    Wait;
-    Wait;
-    Wait;
-    Wait;
-    Wait;
+    Safe-Sleep 330; # Sleep C
 	Send-Keys "{F4}";
     return $foundRoom;
 }
 
 # TODO implement time recording
 # TODO implement restarts
+# TODO catch restartable errors
 Function Retry-Process-Room {
 	Param ([int]$roomNumber);
     try {
         return Process-Room $roomNumber;
     } catch {
-        # Warning: high coupling
-        if ($_.Exception.Message -eq "Safeguard: stop program when mouse moves to edge of screen") {
-            throw $_;
-        } elseif ($_.Exception.Message.Substring(0, 24) -eq "Unexpected request code:") {
-            throw $_;
-        } elseif ($_.Exception.Message -eq "You cannot call a method on a null-valued expression.") {
-            throw $_;
-        } elseif ($_.Exception.Message -eq "Expected to find a checked out room if the room number doesn't match") {
+        if ($_.Exception.Message -eq "Expected to find a checked out room if the room number doesn't match") {
             if ((Retry-Get-Clipboard) -eq "!ERROR=21  (Invalid line number or label)") {
                 throw "Fosse ran out of memory";
             } else {
-                $Global:inspect = $_;
-                throw "Unrecognized error. Type `$inspect for more details.";
+                throw $_;
             }
         } else {
-            $Global:inspect = $_;
-            throw "Unrecognized error. Type `$inspect for more details.";
+            throw $_;
         }
     }
 }
