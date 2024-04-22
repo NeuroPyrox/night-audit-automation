@@ -237,9 +237,6 @@ Function Is-Schedule-Empty {
 # After we implement time recording, for each error caused by going too fast:
 #   Record the location of the error, the wait time,
 #   the time since the last error, and the resulting time spent.
-# Highest wait time for errors:
-#   A 30ms
-#   B 320ms
 Function Safe-Sleep {
     Param ([int]$milliseconds);
     Sleep -Milliseconds $milliseconds;
@@ -251,7 +248,7 @@ Function Safe-Sleep {
     }
 }
 
-$minimumSleepTime = 90;
+$minimumSleepTime = 70;
 
 Function Wait {
     Safe-Sleep $Global:minimumSleepTime; # Sleep A
@@ -356,8 +353,9 @@ Function Copy-From-Fosse {
 	Move-Mouse $y1 $y2;
 	Up-Mouse;
 	Right-Click;
-    Extend-Wait 200; # A
+    Extend-Wait 200;
 	Move-Mouse $z1 $z2;
+    Extend-Wait 80;
 	Left-Click;
     return Retry-Get-Clipboard;
 }
