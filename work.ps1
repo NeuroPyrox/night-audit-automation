@@ -583,7 +583,8 @@ Function Main {
             $null = $Global:foundRooms.Add($foundRoom);
         } elseif (0 -le $roomIndex) {
             if ($Global:foundRooms[$roomIndex] -ne $foundRoom) {
-                throw "Different result for finding room: $roomNumber!";
+                Write-Host "$roomNumber found room on one run but not on another run";
+                $Global:foundRooms[$roomIndex] = $foundRoom;
             }
         } else {
             throw "Unreachable branch!";
