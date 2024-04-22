@@ -230,13 +230,6 @@ Function Is-Schedule-Empty {
 	$true;
 }
 
-# TODO minimize waiting time
-# Criterion for telling if we can save time:
-#   Choose the wait time with the lowest resulting time spent per time since last error.
-#   Use Thompson sampling
-# After we implement time recording, for each error caused by going too fast:
-#   Record the location of the error, the wait time,
-#   the time since the last error, and the resulting time spent.
 Function Safe-Sleep {
     Param ([int]$milliseconds);
     Sleep -Milliseconds $milliseconds;
@@ -248,7 +241,7 @@ Function Safe-Sleep {
     }
 }
 
-$minimumSleepTime = 70;
+$minimumSleepTime = 100;
 
 Function Wait {
     Safe-Sleep $Global:minimumSleepTime; # Sleep A
@@ -355,7 +348,6 @@ Function Copy-From-Fosse {
 	Right-Click;
     Extend-Wait 200;
 	Move-Mouse $z1 $z2;
-    Extend-Wait 80;
 	Left-Click;
     return Retry-Get-Clipboard;
 }
@@ -544,12 +536,11 @@ Function Process-Room {
         Write-Host "$roomNumber $status";
     }
 	Send-Keys "{F4}";
-    Extend-Wait 330; # B
+    Extend-Wait 300;
 	Send-Keys "{F4}";
     return $foundRoom;
 }
 
-# TODO implement time recording
 # TODO implement restarts
 # TODO catch restartable errors
 Function Retry-Process-Room {
