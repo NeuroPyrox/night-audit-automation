@@ -566,7 +566,7 @@ Function Main {
             throw "Unreachable branch!";
         } elseif ($Global:foundRooms.Count -eq $roomIndex) {
             $null = $Global:foundRooms.Add($foundRoom);
-        } elseif (0 -le $roomIndex) {Main 
+        } elseif (0 -le $roomIndex) { 
             if ($Global:foundRooms[$roomIndex] -ne $foundRoom) {
                 Write-Host "$roomNumber found room on one run but not on another run";
                 $Global:foundRooms[$roomIndex] = $foundRoom;
