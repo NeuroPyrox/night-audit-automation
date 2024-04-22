@@ -563,11 +563,16 @@ Function Retry-Process-Room {
 if ($foundRooms -eq $null) {
     $foundRooms = [System.Collections.ArrayList]@();
 }
+
+Function Skip-Room {
+    $null = $Global:foundRooms.Add($false);
+}
+
 Function Main {
     Param([int]$startRoom);
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
     if ($Global:foundRooms.Count -lt $roomNumbers.IndexOf($startRoom)) {
-        throw "Haven't processed $($roomNumbers[$Global:foundRooms.Count]) yet!";
+        throw "Haven't processed $($roomNumbers[$Global:foundRooms.Count]) yet! Type `"Skip-Room`" to skip it.";
     } elseif ($roomNumbers.IndexOf($startRoom) -eq -1) {
         throw "$startRoom is not a valid room number!";
     }
