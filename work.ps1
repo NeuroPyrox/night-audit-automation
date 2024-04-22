@@ -238,9 +238,8 @@ Function Is-Schedule-Empty {
 #   Record the location of the error, the wait time,
 #   the time since the last error, and the resulting time spent.
 # Highest wait time for errors:
-#   A 50ms
-#   B 30ms
-#   C 320ms
+#   A 30ms
+#   B 320ms
 Function Safe-Sleep {
     Param ([int]$milliseconds);
     Sleep -Milliseconds $milliseconds;
@@ -252,8 +251,18 @@ Function Safe-Sleep {
     }
 }
 
+$minimumSleepTime = 90;
+
 Function Wait {
-    Safe-Sleep 100; # Sleep A
+    Safe-Sleep $Global:minimumSleepTime; # Sleep A
+}
+
+Function Extend-Wait {
+    Param ([int]$milliseconds);
+    $milliseconds -= $Global:minimumSleepTime;
+    if (0 -lt $milliseconds) {
+        Safe-Sleep $milliseconds;
+    }
 }
 
 $last10Keys = @("", "", "", "", "", "", "", "", "", "");
@@ -347,7 +356,7 @@ Function Copy-From-Fosse {
 	Move-Mouse $y1 $y2;
 	Up-Mouse;
 	Right-Click;
-    Safe-Sleep 100; # Wait B
+    Extend-Wait 200; # A
 	Move-Mouse $z1 $z2;
 	Left-Click;
     return Retry-Get-Clipboard;
@@ -537,7 +546,7 @@ Function Process-Room {
         Write-Host "$roomNumber $status";
     }
 	Send-Keys "{F4}";
-    Safe-Sleep 330; # Sleep C
+    Extend-Wait 330; # B
 	Send-Keys "{F4}";
     return $foundRoom;
 }
