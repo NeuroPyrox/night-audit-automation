@@ -531,7 +531,7 @@ Function Process-Room {
         Write-Host "$roomNumber $status";
     }
 	Send-Keys "{F4}";
-    Extend-Wait 300;
+    Extend-Wait 600;
 	Send-Keys "{F4}";
 }
 
