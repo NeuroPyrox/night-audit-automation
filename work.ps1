@@ -542,7 +542,6 @@ Function Process-Room {
 }
 
 # TODO implement restarts
-# TODO catch restartable errors
 Function Retry-Process-Room {
 	Param ([int]$roomNumber);
     try {
@@ -551,6 +550,8 @@ Function Retry-Process-Room {
         if ($_.Exception.Message -eq "Expected to find a checked out room if the room number doesn't match") {
             if ((Retry-Get-Clipboard) -eq "!ERROR=21  (Invalid line number or label)") {
                 throw "Fosse ran out of memory";
+            } elseif ((Retry-Get-Clipboard).Substring(363, 16) -eq "Room/Stay Detail") {
+                throw "Implement restarting";
             } else {
                 throw $_;
             }
