@@ -358,6 +358,13 @@ Function Navigate-To-Room-Number {
 	Send-Keys "~";
 	Send-Keys "~";
 	$found = Copy-From-Fosse 710 250 1310 500 1250 510;
+    while ($found.Substring(363, 9) -eq "Room/Stay") {
+        Send-Keys "{F4}";
+	    Send-Keys ($roomNumber.ToString());
+	    Send-Keys "~";
+	    Send-Keys "~";
+	    $found = Copy-From-Fosse 710 250 1310 500 1250 510;
+    }
     $row0 = $found.Substring(0, 36);
 	if ($row0 -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
@@ -531,7 +538,6 @@ Function Process-Room {
         Write-Host "$roomNumber $status";
     }
 	Send-Keys "{F4}";
-    Extend-Wait 600;
 	Send-Keys "{F4}";
 }
 
