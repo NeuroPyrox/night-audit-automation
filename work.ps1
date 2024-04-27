@@ -230,28 +230,13 @@ Function Is-Schedule-Empty {
 	$true;
 }
 
-Function Safe-Sleep {
-    Param ([int]$milliseconds);
-    Sleep -Milliseconds $milliseconds;
+Function Wait {
+    Sleep -Milliseconds 100;
     Add-Type -AssemblyName System.Windows.Forms;
     $x = [System.Windows.Forms.Cursor]::Position.X;
     $y = [System.Windows.Forms.Cursor]::Position.Y;
     if (($x -eq 0) -or ($x -eq 1439) -or ($y -eq 0) -or ($y -eq 899)) {
         throw "Safeguard: stop program when mouse moves to edge of screen";
-    }
-}
-
-$minimumSleepTime = 100;
-
-Function Wait {
-    Safe-Sleep $Global:minimumSleepTime; # Sleep A
-}
-
-Function Extend-Wait {
-    Param ([int]$milliseconds);
-    $milliseconds -= $Global:minimumSleepTime;
-    if (0 -lt $milliseconds) {
-        Safe-Sleep $milliseconds;
     }
 }
 
@@ -346,7 +331,7 @@ Function Copy-From-Fosse {
 	Move-Mouse $y1 $y2;
 	Up-Mouse;
 	Right-Click;
-    Extend-Wait 200;
+    Wait;
 	Move-Mouse $z1 $z2;
 	Left-Click;
     return Retry-Get-Clipboard;
