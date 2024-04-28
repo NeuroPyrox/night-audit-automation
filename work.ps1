@@ -383,7 +383,11 @@ Function Navigate-To-Room-Number {
 }
 
 Function Has-J8 {
-	$first6Requests = Parse-First-6-Requests (Copy-From-Fosse 660 470 1040 470 1050 480);
+    $first6RequestsRaw = Copy-From-Fosse 660 470 1040 470 1050 480;
+    while ($first6RequestsRaw.Length -ne 23) {
+        $first6RequestsRaw = Copy-From-Fosse 660 470 1040 470 1050 480;
+    }
+	$first6Requests = Parse-First-6-Requests $first6RequestsRaw;
     if ("J8" -in $first6Requests) {
         return $true;
     }
@@ -515,10 +519,10 @@ Function Process-Room {
     $hasJ8 = Has-J8;
 	Send-Keys "g";
     $housekeeping = Copy-Housekeeping-Screen;
-    while ($housekeeping.Substring(229, 9) -eq "Room/Stay") {
-	    Send-Keys "g";
-        $housekeeping = Copy-Housekeeping-Screen;
-    }
+#    while ($housekeeping.Substring(229, 9) -eq "Room/Stay") {
+#	    Send-Keys "g";
+#        $housekeeping = Copy-Housekeeping-Screen;
+#    }
     Check-Housekeeping-Comments $housekeeping $roomNumber;
     if ($hasJ8) {
         if (Has-Housekeeping $housekeeping) {
