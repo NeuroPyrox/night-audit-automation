@@ -344,7 +344,11 @@ Function Navigate-To-Room-Number {
 	Send-Keys "~";
 	$found = Copy-From-Fosse 710 250 1310 500 1250 510;
     while ($found.Substring(363, 9) -eq "Room/Stay") {
-        Send-Keys "{F4}";
+        if ($found.Substring(59, 8) -eq "Security") {
+            Send-Keys "{F4}{F4}";
+        } else {
+            Send-Keys "{F4}";
+        }
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
 	    Send-Keys "~";
