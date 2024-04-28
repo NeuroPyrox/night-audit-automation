@@ -511,6 +511,10 @@ Function Process-Room {
     $hasJ8 = Has-J8;
 	Send-Keys "g";
     $housekeeping = Copy-Housekeeping-Screen;
+    while ($housekeeping.Substring(229, 9) -eq "Room/Stay") {
+	    Send-Keys "g";
+        $housekeeping = Copy-Housekeeping-Screen;
+    }
     Check-Housekeeping-Comments $housekeeping $roomNumber;
     if ($hasJ8) {
         if (Has-Housekeeping $housekeeping) {
