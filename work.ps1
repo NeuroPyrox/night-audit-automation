@@ -342,17 +342,13 @@ Function Navigate-To-Room-Number {
 	Send-Keys ($roomNumber.ToString());
 	Send-Keys "~";
 	Send-Keys "~";
-	$found = Copy-From-Fosse 710 250 1310 500 1250 510;
+	$found = Copy-From-Fosse 710 220 1310 500 1250 510;
     while ($found.Substring(363, 9) -eq "Room/Stay") {
-        if ($found.Substring(59, 8) -eq "Security") {
-            Send-Keys "{F4}{F4}";
-        } else {
-            Send-Keys "{F4}";
-        }
+        Send-Keys "{F4}{F4}";
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
 	    Send-Keys "~";
-	    $found = Copy-From-Fosse 710 250 1310 500 1250 510;
+	    $found = Copy-From-Fosse 710 230 1310 500 1250 510;
     }
     $row0 = $found.Substring(0, 36);
 	if ($row0 -eq "NO MATCHES!                         ") {
