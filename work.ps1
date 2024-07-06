@@ -39,7 +39,7 @@ Function Assert-Valid-Request-Codes {
     $requestCodes | % {
         if (!($_ -in (( `
             "A0,A1,A5,A9,B4,B5,C1,D4,D7,D9,E1,E6,F2,G3,H1,H2,I1,I2,I4,J8,J9,K1,K2,K8,L2,L3" `
-            + ",M1,M5,M8,MK,N1,N2,N3,N4,O9,P6,P8,R1,R3,R4,S5,S7,U2,V9,W6,X1,X2,X4,X5,Y1,Y2,ZQ" `
+            + ",M1,M5,M8,MK,N1,N2,N3,N4,O9,P6,P8,R1,R3,R4,S5,S7,U2,V9,X1,X2,X4,X5,Y1,Y2,ZQ" `
         ) -split ","))) {
             throw "Unexpected request code: $_";
         }
@@ -75,7 +75,7 @@ Function Parse-F3-Requests {
         return $x -eq "  ";
     };
     if ($withUnderscore[-1] -ne "__") {
-        throw "Expected `"__`"!"
+        throw "Expected `"__`"!";
     }
     $result = Skip-Last $withUnderscore;
     Assert-Valid-Request-Codes $result;
@@ -342,15 +342,19 @@ Function Navigate-To-Room-Number {
 	Send-Keys ($roomNumber.ToString());
 	Send-Keys "~";
 	Send-Keys "~";
-	$found = Copy-From-Fosse 710 220 1310 500 1250 510;
+	$found = Copy-From-Fosse 710 250 1310 520 1250 530;
     while ($found.Substring(363, 9) -eq "Room/Stay") {
         Send-Keys "{F4}{F4}";
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
 	    Send-Keys "~";
-	    $found = Copy-From-Fosse 710 230 1310 500 1250 510;
+	    $found = Copy-From-Fosse 710 250 1310 520 1250 530;
     }
     $row0 = $found.Substring(0, 36);
+    if ($row0.Substring(0, 3) -eq "Res") {
+        Write-Host "Need to retry";
+        throw "implement retrying";
+    }
 	if ($row0 -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
 		return $false;
@@ -379,9 +383,9 @@ Function Navigate-To-Room-Number {
 }
 
 Function Has-J8 {
-    $first6RequestsRaw = Copy-From-Fosse 660 470 1040 470 1050 480;
+    $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
     while ($first6RequestsRaw.Length -ne 23) {
-        $first6RequestsRaw = Copy-From-Fosse 660 470 1040 470 1050 480;
+        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
     }
 	$first6Requests = Parse-First-6-Requests $first6RequestsRaw;
     if ("J8" -in $first6Requests) {
@@ -390,7 +394,7 @@ Function Has-J8 {
     if ($first6Requests.Count -lt 6) {
         return $false;
     }
-    Send-Keys-Sequentially "E,pmont059,~,{UP},{UP},{UP},{F3}";
+    Send-Keys-Sequentially "E,cpsmi760,~,{UP},{UP},{UP},{F3}";
     $f3Requests = Parse-F3-Requests (Copy-From-Fosse 300 300 330 530 340 540);
     if ($f3Requests[0] -in $first6Requests) {
         Send-Keys "{F4}";
@@ -402,6 +406,7 @@ Function Has-J8 {
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 270 300 1240 660 1250 400;
     $result = $clip -split "`n";
+    $Global:inspect = $clip;
 	if ($result[4].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
