@@ -414,12 +414,18 @@ Function Has-J8 {
 
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 270 300 1240 660 1250 400;
-    $result = $clip -split "`n";
     $Global:inspect = $clip;
-	if ($result[4].Substring(1, 12) -ne "Service Date") {
+    if ($clip.GetType().name -ne "Object[]") {
+        if ($clip.Substring(229, 9) -eq "Room/Stay") {
+            return Copy-Housekeeping-Screen;
+        } else {
+		    throw "Not on the housekeeping screen";
+        }
+    }
+	if ($clip[4].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
-	return Write-Output -NoEnumerate $result;
+	return Write-Output -NoEnumerate $clip;
 }
 
 Function Check-Housekeeping-Comments {
@@ -529,10 +535,6 @@ Function Process-Room {
     $hasJ8 = Has-J8;
 	Send-Keys "g";
     $housekeeping = Copy-Housekeeping-Screen;
-    # TODO move within above function
-    if ($housekeeping.Count -ne 13) {
-        throw "Not on housekeeping screen!"
-    }
     Check-Housekeeping-Comments $housekeeping $roomNumber;
     if ($hasJ8) {
         if (Has-Housekeeping $housekeeping) {
