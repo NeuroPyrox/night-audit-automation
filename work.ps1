@@ -74,10 +74,11 @@ Function Parse-F3-Requests {
         Param([string]$x);
         return $x -eq "  ";
     };
-    if ($withUnderscore[-1] -ne "__") {
-        throw "Expected `"__`"!";
+    $result = if ($withUnderscore[-1] -eq "__") {
+        Skip-Last $withUnderscore;
+    } else {
+        $withUnderscore;
     }
-    $result = Skip-Last $withUnderscore;
     Assert-Valid-Request-Codes $result;
     return $result;
 }
@@ -365,6 +366,9 @@ Function Navigate-To-Room-Number {
 	}
     if ($row0.Substring(0, 3) -ne "C/O") {
         $Global:inspect = @($row0, $roomNumber);
+        # Could be that $row0 is from the previous room
+        Send-Keys "{F4}";
+        # TODO check previous room number
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
     $row1 = $found.Substring(80, 36);
@@ -384,6 +388,11 @@ Function Navigate-To-Room-Number {
 
 Function Has-J8 {
     $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
+    # No profile was found
+    if ($first6RequestsRaw -eq "wed by Acct Code)      ") {
+        Send-Keys "~";
+        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
+    }
     while ($first6RequestsRaw.Length -ne 23) {
         $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
     }
@@ -394,7 +403,7 @@ Function Has-J8 {
     if ($first6Requests.Count -lt 6) {
         return $false;
     }
-    Send-Keys-Sequentially "E,cpsmi760,~,{UP},{UP},{UP},{F3}";
+    Send-Keys-Sequentially "E,pmont059,~,{UP},{UP},{UP},{F3}";
     $f3Requests = Parse-F3-Requests (Copy-From-Fosse 300 300 330 530 340 540);
     if ($f3Requests[0] -in $first6Requests) {
         Send-Keys "{F4}";
@@ -520,10 +529,10 @@ Function Process-Room {
     $hasJ8 = Has-J8;
 	Send-Keys "g";
     $housekeeping = Copy-Housekeeping-Screen;
-#    while ($housekeeping.Substring(229, 9) -eq "Room/Stay") {
-#	    Send-Keys "g";
-#        $housekeeping = Copy-Housekeeping-Screen;
-#    }
+    # TODO move within above function
+    if ($housekeeping.Count -ne 13) {
+        throw "Not on housekeeping screen!"
+    }
     Check-Housekeeping-Comments $housekeeping $roomNumber;
     if ($hasJ8) {
         if (Has-Housekeeping $housekeeping) {
