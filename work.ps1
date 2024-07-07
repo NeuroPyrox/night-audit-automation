@@ -344,7 +344,7 @@ Function Navigate-To-Room-Number {
 	Send-Keys "~";
 	Send-Keys "~";
 	$found = Copy-From-Fosse 710 250 1310 520 1250 530;
-    while ($found.Substring(363, 9) -eq "Room/Stay") {
+    while (($found.Substring(0, 3) -eq "Res") -or ($found.Substring(363, 9) -eq "Room/Stay")) {
         Send-Keys "{F4}{F4}";
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
@@ -352,10 +352,6 @@ Function Navigate-To-Room-Number {
 	    $found = Copy-From-Fosse 710 250 1310 520 1250 530;
     }
     $row0 = $found.Substring(0, 36);
-    if ($row0.Substring(0, 3) -eq "Res") {
-        Write-Host "Need to retry";
-        throw "implement retrying";
-    }
 	if ($row0 -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
 		return $false;
