@@ -344,7 +344,10 @@ Function Navigate-To-Room-Number {
 	Send-Keys "~";
 	Send-Keys "~";
 	$found = Copy-From-Fosse 710 250 1310 520 1250 530;
-    while (($found.Substring(0, 3) -eq "Res") -or ($found.Substring(363, 9) -eq "Room/Stay")) {
+    while (($found.Substring(0, 3) -eq "Res") `
+            -or ($found.Substring(0, 3) -eq "GTD") `
+            -or ($found.Substring(0, 3) -eq "CXL") `
+            -or ($found.Substring(363, 9) -eq "Room/Stay")) {
         Send-Keys "{F4}{F4}";
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
@@ -363,7 +366,7 @@ Function Navigate-To-Room-Number {
     if ($row0.Substring(0, 3) -ne "C/O") {
         $Global:inspect = @($row0, $roomNumber);
         # Could be that $row0 is from the previous room
-        Send-Keys "{F4}";
+        # Send-Keys "{F4}";
         # TODO check previous room number
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
@@ -413,6 +416,7 @@ Function Copy-Housekeeping-Screen {
     $Global:inspect = $clip;
     if ($clip.GetType().name -ne "Object[]") {
         if ($clip.Substring(229, 9) -eq "Room/Stay") {
+            Send-Keys "g";
             return Copy-Housekeeping-Screen;
         } else {
 		    throw "Not on the housekeeping screen";
