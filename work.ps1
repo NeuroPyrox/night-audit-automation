@@ -344,6 +344,10 @@ Function Navigate-To-Room-Number {
 	Send-Keys "~";
 	Send-Keys "~";
 	$found = Copy-From-Fosse 710 250 1310 520 1250 530;
+    if ($found.Length -ne 756) {
+        $Global:inspect = $found;
+        throw "Unexpected length";
+    }
     while (($found.Substring(0, 3) -eq "Res") `
             -or ($found.Substring(0, 3) -eq "GTD") `
             -or ($found.Substring(0, 3) -eq "CXL") `
@@ -364,7 +368,7 @@ Function Navigate-To-Room-Number {
 	    return $true;
 	}
     if ($row0.Substring(0, 3) -ne "C/O") {
-        $Global:inspect = @($row0, $roomNumber);
+        $Global:inspect = @($found, $roomNumber);
         # Could be that $row0 is from the previous room
         # Send-Keys "{F4}";
         # TODO check previous room number
