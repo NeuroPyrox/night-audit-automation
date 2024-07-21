@@ -338,11 +338,12 @@ Function Copy-From-Fosse {
     return Retry-Get-Clipboard;
 }
 
-Function Search-Room-Number {
-	Param ([int]$roomNumber);
-	Send-Keys ($roomNumber.ToString());
-	Send-Keys "~";
-	Send-Keys "~";
+Function Copy-Room-Search {
+    Param ([int]$iteration);
+    if (1 -lt $iteration) {
+        throw "Didn't work after 1 retry!";
+    }
+    $iteration = $iteration + 1;
 	$found = Copy-From-Fosse 710 250 1310 520 -60 10;
     if ($found.GetType().name -eq "Object[]") {
         if ($found[0].GetType().name -eq "String") {
@@ -355,16 +356,27 @@ Function Search-Room-Number {
         $Global:inspect = $found;
         throw "Unexpected length";
     }
-    while (($found.Substring(0, 3) -eq "Res") `
+    if (($found.Substring(0, 3) -eq "Res") `
             -or ($found.Substring(0, 3) -eq "GTD") `
             -or ($found.Substring(0, 3) -eq "CXL") `
             -or ($found.Substring(363, 9) -eq "Room/Stay")) {
+        # TODO only do 1 f4 where needed
         Send-Keys "{F4}{F4}";
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
 	    Send-Keys "~";
-	    $found = Copy-From-Fosse 710 250 1310 520 -60 10;
+	    return Copy-Room-Search $iteration;
     }
+    # TODO check for previous room number
+    return $found;
+}
+
+Function Search-Room-Number {
+	Param ([int]$roomNumber);
+	Send-Keys ($roomNumber.ToString());
+	Send-Keys "~";
+	Send-Keys "~";
+	$found = Copy-Room-Search 0;
     $row0 = $found.Substring(0, 36);
 	if ($row0 -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
@@ -451,6 +463,7 @@ Function Copy-Housekeeping-Screen {
 	if ($clip[4].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
+    # TODO see if -NoEnumerate is a side-effect of not joining the copy
 	return Write-Output -NoEnumerate $clip;
 }
 
