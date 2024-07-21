@@ -326,25 +326,32 @@ Function Retry-Get-Clipboard {
 }
 
 Function Copy-From-Fosse {
-    Param([int]$x1, [int]$x2, [int]$y1, [int]$y2, [int]$z1, [int]$z2);
+    Param([int]$x1, [int]$x2, [int]$y1, [int]$y2, [int]$zPlus1, [int]$zPlus2);
 	Move-Mouse $x1 $x2;
 	Down-Mouse;
 	Move-Mouse $y1 $y2;
 	Up-Mouse;
 	Right-Click;
     Wait;
-	Move-Mouse $z1 $z2;
+	Move-Mouse ($y1 + $zPlus1) ($y2 + $zPlus2);
 	Left-Click;
     return Retry-Get-Clipboard;
 }
 
-Function Navigate-To-Room-Number {
+Function Search-Room-Number {
 	Param ([int]$roomNumber);
 	Send-Keys ($roomNumber.ToString());
 	Send-Keys "~";
 	Send-Keys "~";
-	$found = Copy-From-Fosse 710 250 1310 520 1250 530;
-    if ($found.Length -ne 756) {
+	$found = Copy-From-Fosse 710 250 1310 520 -60 10;
+    if ($found.GetType().name -eq "Object[]") {
+        if ($found[0].GetType().name -eq "String") {
+            $found = $found -join "";
+        } else {
+            throw "Unexpected type";
+        }
+    }
+    if (($found.Length -ne 756) -and ($found.Length -ne 747)) {
         $Global:inspect = $found;
         throw "Unexpected length";
     }
@@ -356,7 +363,7 @@ Function Navigate-To-Room-Number {
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
 	    Send-Keys "~";
-	    $found = Copy-From-Fosse 710 250 1310 520 1250 530;
+	    $found = Copy-From-Fosse 710 250 1310 520 -60 10;
     }
     $row0 = $found.Substring(0, 36);
 	if ($row0 -eq "NO MATCHES!                         ") {
@@ -390,14 +397,14 @@ Function Navigate-To-Room-Number {
 }
 
 Function Has-J8 {
-    $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
+    $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 10 10;
     # No profile was found
     if ($first6RequestsRaw -eq "wed by Acct Code)      ") {
         Send-Keys "~";
-        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
+        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 10 10;
     }
     while ($first6RequestsRaw.Length -ne 23) {
-        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 1050 510;
+        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 10 10;
     }
 	$first6Requests = Parse-First-6-Requests $first6RequestsRaw;
     if ("J8" -in $first6Requests) {
@@ -407,7 +414,7 @@ Function Has-J8 {
         return $false;
     }
     Send-Keys-Sequentially "E,pmont059,~,{UP},{UP},{UP},{F3}";
-    $f3Requests = Parse-F3-Requests (Copy-From-Fosse 300 300 330 530 340 540);
+    $f3Requests = Parse-F3-Requests (Copy-From-Fosse 300 300 330 530 10 10);
     if ($f3Requests[0] -in $first6Requests) {
         Send-Keys "{F4}";
         return "J8" -in $f3Requests;
@@ -416,9 +423,24 @@ Function Has-J8 {
 }
 
 Function Copy-Housekeeping-Screen {
-    $clip = Copy-From-Fosse 270 300 1240 660 1250 400;
+    $clip = Copy-From-Fosse 270 300 1240 660 10 -260;
     $Global:inspect = $clip;
     if ($clip.GetType().name -ne "Object[]") {
+        if ($clip.GetType().name -eq "String") {
+            if ($clip.Length -eq 23) {
+                return Copy-Housekeeping-Screen;
+            } elseif ($clip.Length -eq 1018) {
+                Send-Keys "{F4}";
+                $Global:inspect = $clip;
+                throw "Uncoded path";
+            } else {
+                $Global:inspect = $clip;
+                throw "Unexpected length";
+            }
+        } else {
+            $Global:inspect = $clip;
+            throw "Unexpected type";
+        }
         if ($clip.Substring(229, 9) -eq "Room/Stay") {
             Send-Keys "g";
             return Copy-Housekeeping-Screen;
@@ -574,7 +596,7 @@ Function Main {
     Left-Click;
     for ($roomIndex = $roomNumbers.IndexOf($startRoom); $roomIndex -lt $roomNumbers.Count; $roomIndex++) {
         $roomNumber = $roomNumbers[$roomIndex];
-        $foundRoom = Navigate-To-Room-Number $roomNumber;
+        $foundRoom = Search-Room-Number $roomNumber;
         if ($foundRoom) {
             Process-Room $roomNumber;
         } else {
