@@ -360,12 +360,12 @@ Function Copy-Room-Search {
             -or ($found.Substring(0, 3) -eq "GTD") `
             -or ($found.Substring(0, 3) -eq "CXL") `
             -or ($found.Substring(363, 9) -eq "Room/Stay")) {
-        # TODO only do 1 f4 where needed
-        Send-Keys "{F4}{F4}";
-	    Send-Keys ($roomNumber.ToString());
-	    Send-Keys "~";
-	    Send-Keys "~";
-	    return Copy-Room-Search $iteration;
+        # Send-Keys "{F4}{F4}";
+	    # Send-Keys ($roomNumber.ToString());
+	    # Send-Keys "~";
+	    # Send-Keys "~";
+	    # return Copy-Room-Search $iteration;
+        throw "Check whether 1 or 2 f4s are needed and implement";
     }
     # TODO check for previous room number
     return $found;
