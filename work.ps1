@@ -1,4 +1,5 @@
 $inspect = $null;
+$lastRoomProcessed = 0;
 
 Function Skip-Last {
     Param ([object[]]$array);
@@ -367,7 +368,9 @@ Function Copy-Room-Search {
 	    # return Copy-Room-Search $iteration;
         throw "Check whether 1 or 2 f4s are needed and implement";
     }
-    # TODO check for previous room number
+    if ($found.Substring(0, 3) -eq $Global:lastRoomProcessed.ToString()) {
+        throw "This check worked! Now implement retry and delete below comments.";
+    }
     return $found;
 }
 
@@ -587,6 +590,7 @@ Function Process-Room {
     }
 	Send-Keys "{F4}";
 	Send-Keys "{F4}";
+    $Global:lastRoomProcessed = $roomNumber;
 }
 
 if ($foundRooms -eq $null) {
