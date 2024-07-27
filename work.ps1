@@ -386,35 +386,40 @@ Function Search-Room-Number {
 	Send-Keys "~";
 	Send-Keys "~";
 	$found = Copy-Room-Search 0;
-    $row0 = $found.Substring(0, 36);
-	if ($row0 -eq "NO MATCHES!                         ") {
+    $row1 = $found.Substring(0, 36);
+	if ($row1 -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
 		return $false;
 	}
-	if ($row0.Substring(0, 3) -eq $roomNumber.ToString()) {
-	    Send-Keys "~";
-	    return $true;
-	}
-    if ($row0.Substring(0, 3) -ne "C/O") {
-        $Global:inspect = @($found, $roomNumber);
-        # Could be that $row0 is from the previous room
-        # Send-Keys "{F4}";
-        # TODO check previous room number
-	    throw "Expected to find a checked out room if the room number doesn't match";
-    }
-    $row1 = $found.Substring(80, 36);
-    if ($row1 -eq "                                    ") {
-		Send-Keys "{F4}";
-		return $false;
-    }
 	if ($row1.Substring(0, 3) -eq $roomNumber.ToString()) {
 	    Send-Keys "~";
 	    return $true;
 	}
-    if ($row1.Substring(0, 3) -eq "C/O") {
-	    throw "Unhandled case of 2 or more checkouts";
+    if ($row1.Substring(0, 3) -ne "C/O") {
+        $Global:inspect = @($found, $roomNumber);
+        # Could be that $row1 is from the previous room
+        # Send-Keys "{F4}";
+        # TODO check previous room number
+	    throw "Expected to find a checked out room if the room number doesn't match";
     }
-	throw "Expected the same room number or `"C/O`"";
+    $row2 = $found.Substring(80, 36);
+    if ($row2 -eq "                                    ") {
+		Send-Keys "{F4}";
+		return $false;
+    }
+	if ($row2.Substring(0, 3) -eq $roomNumber.ToString()) {
+	    Send-Keys "~";
+	    return $true;
+	}
+    if ($row2.Substring(0, 3) -ne "C/O") {
+	    throw "Expected the same room number or `"C/O`"";
+    }
+    $row3 = $found.Substring(160, 36);
+    if ($row3 -eq "                                    ") {
+		Send-Keys "{F4}";
+		return $false;
+    }
+	throw "Expected row 3 to be empty!";
 }
 
 Function Copy-First-6-Requests {
