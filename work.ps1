@@ -417,17 +417,21 @@ Function Search-Room-Number {
 	throw "Expected the same room number or `"C/O`"";
 }
 
-Function Has-J8 {
-    $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 10 10;
+Function Copy-First-6-Requests {
+    $raw = Copy-From-Fosse 660 500 1040 500 10 10;
     # No profile was found
-    if ($first6RequestsRaw -eq "wed by Acct Code)      ") {
+    if ($raw -eq "wed by Acct Code)      ") {
         Send-Keys "~";
-        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 10 10;
+        $raw = Copy-From-Fosse 660 500 1040 500 10 10;
     }
-    while ($first6RequestsRaw.Length -ne 23) {
-        $first6RequestsRaw = Copy-From-Fosse 660 500 1040 500 10 10;
+    while ($raw.Length -ne 23) {
+        $raw = Copy-From-Fosse 660 500 1040 500 10 10;
     }
-	$first6Requests = Parse-First-6-Requests $first6RequestsRaw;
+    return $raw;
+}
+
+Function Has-J8 {
+	$first6Requests = Parse-First-6-Requests (Copy-First-6-Requests);
     if ("J8" -in $first6Requests) {
         return $true;
     }
