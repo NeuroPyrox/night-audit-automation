@@ -341,8 +341,8 @@ Function Copy-From-Fosse {
 
 Function Copy-Room-Search {
     Param ([int]$iteration);
-    if (1 -lt $iteration) {
-        throw "Didn't work after 1 retry!";
+    if (2 -lt $iteration) {
+        throw "Didn't work after 2 retries!";
     }
     $iteration = $iteration + 1;
 	$found = Copy-From-Fosse 710 250 1310 520 -60 10;
@@ -423,9 +423,14 @@ Function Search-Room-Number {
 }
 
 Function Copy-First-6-Requests {
-    $raw = Copy-From-Fosse 660 500 1040 500 10 10;
+    $copy = Copy-From-Fosse 270 200 1040 490 10 10;
+    if ($copy.Substring(3, 11) -eq "NUA Message") {
+        Send-Keys "~";
+    }
+    $raw = $copy.Substring(823, 23);
     # No profile was found
     if ($raw -eq "wed by Acct Code)      ") {
+        throw "I forgot why I wrote the following 2 lines. Please investigate.";
         Send-Keys "~";
         $raw = Copy-From-Fosse 660 500 1040 500 10 10;
     }
@@ -454,7 +459,6 @@ Function Has-J8 {
 
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 270 300 1240 660 10 -260;
-    $Global:inspect = $clip;
     if ($clip.GetType().name -ne "Object[]") {
         if ($clip.GetType().name -eq "String") {
             if ($clip.Length -eq 23) {
