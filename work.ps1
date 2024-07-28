@@ -619,6 +619,7 @@ Function Skip-Room {
 Function Main {
     Param([int]$startRoom);
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
+    $Global:lastRoomProcessed = 0;
     if ($Global:foundRooms.Count -lt $roomNumbers.IndexOf($startRoom)) {
         throw "Haven't processed $($roomNumbers[$Global:foundRooms.Count]) yet! Type `"Skip-Room`" to skip it.";
     } elseif ($roomNumbers.IndexOf($startRoom) -eq -1) {
