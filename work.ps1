@@ -464,6 +464,8 @@ Function Copy-Housekeeping-Screen {
                 Send-Keys "{F4}";
                 $Global:inspect = $clip;
                 throw "Uncoded path";
+            } elseif ($clip.Length -eq 766) {
+                return Copy-Housekeeping-Screen;
             } else {
                 $Global:inspect = $clip;
                 throw "Unexpected length";
