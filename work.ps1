@@ -427,14 +427,11 @@ Function Copy-First-6-Requests {
     if ($copy.Substring(3, 11) -eq "NUA Message") {
         Send-Keys "~";
     }
-    $raw = $copy.Substring(823, 23);
+    $raw = $copy.Substring(743, 23);
     # No profile was found
     if ($raw -eq "wed by Acct Code)      ") {
         throw "I forgot why I wrote the following 2 lines. Please investigate.";
         Send-Keys "~";
-        $raw = Copy-From-Fosse 660 500 1040 500 10 10;
-    }
-    while ($raw.Length -ne 23) {
         $raw = Copy-From-Fosse 660 500 1040 500 10 10;
     }
     return $raw;
