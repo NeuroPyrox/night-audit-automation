@@ -354,8 +354,13 @@ Function Copy-Room-Search {
         }
     }
     if (($found.Length -ne 756) -and ($found.Length -ne 747)) {
-        $Global:inspect = $found;
-        throw "Unexpected length";
+        if ($found.Length -eq 831) {
+            throw "Implement f4";
+	        return Copy-Room-Search $iteration;
+        } else {
+            $Global:inspect = $found;
+            throw "Unexpected length";
+        }
     }
     if (($found.Substring(0, 3) -eq "Res") `
             -or ($found.Substring(0, 3) -eq "GTD") `
