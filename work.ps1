@@ -19,7 +19,7 @@ Function Array-Some {
             return $true;
         }
     }
-    $false;
+    return $false;
 }
 
 Function Trim-End {
@@ -404,7 +404,6 @@ Function Search-Room-Number {
         $Global:inspect = @($found, $roomNumber);
         # Could be that $row1 is from the previous room
         # Send-Keys "{F4}";
-        # TODO check previous room number
 	    throw "Expected to find a checked out room if the room number doesn't match";
     }
     $row2 = $found.Substring(80, 36);
@@ -489,7 +488,6 @@ Function Copy-Housekeeping-Screen {
 	if ($clip[4].Substring(1, 12) -ne "Service Date") {
 		throw "Not on the housekeeping screen";
 	}
-    # TODO see if -NoEnumerate is a side-effect of not joining the copy
 	return Write-Output -NoEnumerate $clip;
 }
 
