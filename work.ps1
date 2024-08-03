@@ -1,5 +1,5 @@
 $inspect = $null;
-$lastRoomProcessed = 0;
+$lastRoomSearched = 0;
 
 Function Skip-Last {
     Param ([object[]]$array);
@@ -188,6 +188,11 @@ Function Are-Services-Weird {
         -or (!$foundCheckout -and $foundTidy -and $foundRfsh -and $found1xwe) `
     );
 }
+
+# Unrecognized patterns:
+# TW R  T  T  R  T  T  RW T
+# T  R  T  T  R  TW T  R  T
+# T  T  RW T  T  R  T  T  T
 
 # Assumes there won't be any unrecognized services
 Function Are-Non-Checkouts-Weird {
@@ -379,7 +384,8 @@ Function Copy-Room-Search {
 	    Send-Keys "~";
 	    return Copy-Room-Search $iteration;
     }
-    if ($found.Substring(0, 3) -eq $Global:lastRoomProcessed.ToString()) {
+    if ($found.Substring(0, 3) -eq $Global:lastRoomSearched.ToString()) {
+        # TODO check if the last room wasn't found
         throw "This check worked! Now implement retry and delete below comments.";
     }
     return $found;
@@ -391,6 +397,7 @@ Function Search-Room-Number {
 	Send-Keys "~";
 	Send-Keys "~";
 	$found = Copy-Room-Search 0;
+    $Global:lastRoomSearched = $roomNumber;
     $row1 = $found.Substring(0, 36);
 	if ($row1 -eq "NO MATCHES!                         ") {
 		Send-Keys "{F4}";
@@ -611,7 +618,6 @@ Function Process-Room {
     }
 	Send-Keys "{F4}";
 	Send-Keys "{F4}";
-    $Global:lastRoomProcessed = $roomNumber;
 }
 
 if ($foundRooms -eq $null) {
@@ -625,7 +631,7 @@ Function Skip-Room {
 Function Main {
     Param([int]$startRoom);
     $roomNumbers = $(101..103; 105; 126..129; 201..214; 216..229; 231; 301..329; 331; 401..429; 431);
-    $Global:lastRoomProcessed = 0;
+    $Global:lastRoomSearched = 0;
     if ($Global:foundRooms.Count -lt $roomNumbers.IndexOf($startRoom)) {
         throw "Haven't processed $($roomNumbers[$Global:foundRooms.Count]) yet! Type `"Skip-Room`" to skip it.";
     } elseif ($roomNumbers.IndexOf($startRoom) -eq -1) {
