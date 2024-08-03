@@ -360,7 +360,7 @@ Function Copy-Room-Search {
     }
     if (($found.Length -ne 756) -and ($found.Length -ne 747)) {
         if ($found.Length -eq 831) {
-            throw "Implement f4";
+            Send-Keys "{F4}";
 	        return Copy-Room-Search $iteration;
         } else {
             $Global:inspect = $found;
