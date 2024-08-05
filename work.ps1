@@ -349,8 +349,8 @@ Function Copy-From-Fosse {
 # TODO check reason for iterating
 Function Copy-Room-Search {
     Param ([int]$iteration);
-    if (2 -lt $iteration) {
-        throw "Didn't work after 2 retries!";
+    if (3 -lt $iteration) {
+        throw "Didn't work after 3 retries!";
     }
     $iteration = $iteration + 1;
 	$found = Copy-From-Fosse 710 250 1310 520 -60 10;
