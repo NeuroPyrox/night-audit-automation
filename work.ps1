@@ -369,11 +369,15 @@ Function Copy-Room-Search {
         Send-Keys "{F4}";
 	    return Copy-Room-Search $iteration;
     } elseif ($found.Length -eq 756) {
-        $Global:inspect = $found;
-        throw "implement check substring";
-    } elseif ($found.Length -eq 747) {
-        $Global:inspect = $found;
-        throw "implement check substring";
+        if ($found.Substring(60, 10) -eq "Guest Name") {
+        } elseif ($found.Substring(363, 9) -eq "Room/Stay") {
+            Send-Keys "{F4}{F4}";
+	        Send-Keys ($roomNumber.ToString());
+	        Send-Keys "~";
+	        Send-Keys "~";
+	        return Copy-Room-Search $iteration;
+        }
+    } elseif (($found.Length -eq 747) -and ($found.Substring(59, 10) -eq "Guest Name")) {
     } else {
         $Global:inspect = $found;
         throw "Unexpected length or substring";
@@ -387,22 +391,14 @@ Function Copy-Room-Search {
 	    # Send-Keys "~";
 	    # return Copy-Room-Search $iteration;
         throw "Check whether 1 or 2 f4s are needed and implement";
-    }
-    if ($found.Substring(0, 3) -eq $Global:lastRoomSearched.ToString()) {
+    } elseif ($found.Substring(0, 3) -eq $Global:lastRoomSearched.ToString()) {
         # TODO check if the last room wasn't found
         throw "This check worked! Now implement retry and delete below comments.";
-    }
-    # TODO is this check redundant after implementing substring checks above?
-    if ($found.Substring(363, 9) -eq "Room/Stay") {
-        Send-Keys "{F4}{F4}";
-	    Send-Keys ($roomNumber.ToString());
-	    Send-Keys "~";
-	    Send-Keys "~";
-	    return Copy-Room-Search $iteration;
     }
     return $found;
 }
 
+# TODO does the difference between 756 and 747 affect this?
 Function Search-Room-Number {
 	Param ([int]$roomNumber);
 	Send-Keys ($roomNumber.ToString());
