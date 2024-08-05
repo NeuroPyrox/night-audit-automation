@@ -1,6 +1,8 @@
 $inspect = $null;
 $lastRoomSearched = 0;
 
+# TODO it takes the following 2 pieces of info to verify a copy: length, substring
+
 Function Skip-Last {
     Param ([object[]]$array);
     if ($array.Count -eq 0) {
@@ -344,6 +346,7 @@ Function Copy-From-Fosse {
     return Retry-Get-Clipboard;
 }
 
+# TODO check reason for iterating
 Function Copy-Room-Search {
     Param ([int]$iteration);
     if (2 -lt $iteration) {
@@ -465,6 +468,7 @@ Function Has-J8 {
     throw "Implement scrolling up";
 }
 
+# TODO refactor
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 270 300 1240 660 10 -260;
     if ($clip.GetType().name -ne "Object[]") {
@@ -472,9 +476,14 @@ Function Copy-Housekeeping-Screen {
             if ($clip.Length -eq 23) {
                 return Copy-Housekeeping-Screen;
             } elseif ($clip.Length -eq 1018) {
-                Send-Keys "{F4}";
-                $Global:inspect = $clip;
-                throw "Uncoded path";
+                if ($clip.Substring(229, 9) -eq "Room/Stay") {
+                    Send-Keys "{F4}";
+                    $Global:inspect = $clip;
+                    throw "Uncoded path";
+                } else {
+                    $Global:inspect = $clip;
+                    throw "Wrong substring";
+                }
             } elseif ($clip.Length -eq 766) {
                 return Copy-Housekeeping-Screen;
             } else {
