@@ -1,7 +1,9 @@
 $inspect = $null;
 $lastRoomSearched = 0;
 
-# TODO it takes the following 2 pieces of info to verify a copy: length, substring
+# TODO detect normalish rooms
+# TODO restart on running out of memory
+# TODO check where we actually need -NoEnumerate
 
 Function Skip-Last {
     Param ([object[]]$array);
@@ -361,14 +363,20 @@ Function Copy-Room-Search {
             throw "Unexpected type";
         }
     }
-    if (($found.Length -ne 756) -and ($found.Length -ne 747)) {
-        if ($found.Length -eq 831) {
-            Send-Keys "{F4}";
-	        return Copy-Room-Search $iteration;
-        } else {
-            $Global:inspect = $found;
-            throw "Unexpected length";
-        }
+    if ($found.Length -eq 831) {
+        $Global:inspect = $found;
+        throw "implement check substring";
+        Send-Keys "{F4}";
+	    return Copy-Room-Search $iteration;
+    } elseif ($found.Length -eq 756) {
+        $Global:inspect = $found;
+        throw "implement check substring";
+    } elseif ($found.Length -eq 747) {
+        $Global:inspect = $found;
+        throw "implement check substring";
+    } else {
+        $Global:inspect = $found;
+        throw "Unexpected length or substring";
     }
     if (($found.Substring(0, 3) -eq "Res") `
             -or ($found.Substring(0, 3) -eq "GTD") `
@@ -380,16 +388,17 @@ Function Copy-Room-Search {
 	    # return Copy-Room-Search $iteration;
         throw "Check whether 1 or 2 f4s are needed and implement";
     }
+    if ($found.Substring(0, 3) -eq $Global:lastRoomSearched.ToString()) {
+        # TODO check if the last room wasn't found
+        throw "This check worked! Now implement retry and delete below comments.";
+    }
+    # TODO is this check redundant after implementing substring checks above?
     if ($found.Substring(363, 9) -eq "Room/Stay") {
         Send-Keys "{F4}{F4}";
 	    Send-Keys ($roomNumber.ToString());
 	    Send-Keys "~";
 	    Send-Keys "~";
 	    return Copy-Room-Search $iteration;
-    }
-    if ($found.Substring(0, 3) -eq $Global:lastRoomSearched.ToString()) {
-        # TODO check if the last room wasn't found
-        throw "This check worked! Now implement retry and delete below comments.";
     }
     return $found;
 }
@@ -437,18 +446,21 @@ Function Search-Room-Number {
 }
 
 Function Copy-First-6-Requests {
-    $copy = Copy-From-Fosse 270 200 1040 490 10 10;
-    if ($copy.Substring(3, 11) -eq "NUA Message") {
-        Send-Keys "~";
+    $clip = Copy-From-Fosse 270 200 1040 490 10 10;
+    if ($clip.Length -eq 766) {
+        if ($clip.Substring(3, 11) -eq "NUA Message") {
+            Send-Keys "~";
+        } elseif ($clip.Substring(743, 23) -eq "wed by Acct Code)      ") {
+            throw "Write a better substring check";
+            throw "I forgot why I wrote the following 2 lines";
+            Send-Keys "~";
+            return Copy-From-Fosse 660 500 1040 500 10 10;
+        }
+    } else {
+        $Global:inspect = $clip;
+        throw "Unexpected length or substring";
     }
-    $raw = $copy.Substring(743, 23);
-    # No profile was found
-    if ($raw -eq "wed by Acct Code)      ") {
-        throw "I forgot why I wrote the following 2 lines. Please investigate.";
-        Send-Keys "~";
-        $raw = Copy-From-Fosse 660 500 1040 500 10 10;
-    }
-    return $raw;
+    return $clip.Substring(743, 23);
 }
 
 Function Has-J8 {
@@ -468,43 +480,31 @@ Function Has-J8 {
     throw "Implement scrolling up";
 }
 
-# TODO refactor
 Function Copy-Housekeeping-Screen {
     $clip = Copy-From-Fosse 270 300 1240 660 10 -260;
-    if ($clip.GetType().name -ne "Object[]") {
-        if ($clip.GetType().name -eq "String") {
-            if ($clip.Length -eq 23) {
-                return Copy-Housekeeping-Screen;
-            } elseif ($clip.Length -eq 1018) {
-                if ($clip.Substring(229, 9) -eq "Room/Stay") {
-                    Send-Keys "{F4}";
-                    $Global:inspect = $clip;
-                    throw "Uncoded path";
-                } else {
-                    $Global:inspect = $clip;
-                    throw "Wrong substring";
-                }
-            } elseif ($clip.Length -eq 766) {
-                return Copy-Housekeeping-Screen;
-            } else {
-                $Global:inspect = $clip;
-                throw "Unexpected length";
-            }
-        } else {
+    if ($clip.GetType().name -eq "Object[]") {
+	    if ($clip[4].Substring(1, 12) -eq "Service Date") {
+	        return Write-Output -NoEnumerate $clip;
+	    } else {
             $Global:inspect = $clip;
-            throw "Unexpected type";
-        }
-        if ($clip.Substring(229, 9) -eq "Room/Stay") {
-            Send-Keys "g";
-            return Copy-Housekeeping-Screen;
-        } else {
 		    throw "Not on the housekeeping screen";
         }
+    } elseif ($clip.GetType().name -ne "String") {
+        $Global:inspect = $clip;
+        throw "Unexpected type";
     }
-	if ($clip[4].Substring(1, 12) -ne "Service Date") {
-		throw "Not on the housekeeping screen";
-	}
-	return Write-Output -NoEnumerate $clip;
+    if (($clip.Length -eq 1018) -and $clip.Substring(229, 9) -eq "Room/Stay") {
+        Send-Keys "{F4}";
+        $Global:inspect = $clip;
+        throw "Uncoded path";
+    } elseif ($clip.Length -eq 766) {
+        $Global:inspect = $clip;
+        throw "Implement a substring check";
+        return Copy-Housekeeping-Screen;
+    } else {
+        $Global:inspect = $clip;
+        throw "Unexpected length or substring";
+    }
 }
 
 Function Check-Housekeeping-Comments {
