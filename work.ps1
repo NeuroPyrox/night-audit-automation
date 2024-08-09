@@ -348,11 +348,11 @@ Function Copy-From-Fosse {
     return Retry-Get-Clipboard;
 }
 
-# TODO check reason for iterating
 Function Copy-Room-Search {
-    Param ([int]$iteration);
-    if (3 -lt $iteration) {
-        throw "Didn't work after 3 retries!";
+    Param ([int]$iteration, [string]$lastFound);
+    if (1 -lt $iteration) {
+        $Global:inspect = $lastFound;
+        throw "Didn't work after 1 retry!";
     }
     $iteration = $iteration + 1;
 	$found = Copy-From-Fosse 710 250 1310 520 -60 10;
@@ -367,7 +367,7 @@ Function Copy-Room-Search {
         $Global:inspect = $found;
         throw "implement check substring";
         Send-Keys "{F4}";
-	    return Copy-Room-Search $iteration;
+	    return Copy-Room-Search $iteration $found;
     } elseif ($found.Length -eq 756) {
         if ($found.Substring(60, 10) -eq "Guest Name") {
         } elseif ($found.Substring(363, 9) -eq "Room/Stay") {
@@ -375,7 +375,7 @@ Function Copy-Room-Search {
 	        Send-Keys ($roomNumber.ToString());
 	        Send-Keys "~";
 	        Send-Keys "~";
-	        return Copy-Room-Search $iteration;
+	        return Copy-Room-Search $iteration $found;
         }
     } elseif (($found.Length -eq 747) -and ($found.Substring(59, 10) -eq "Guest Name")) {
     } else {
@@ -404,7 +404,7 @@ Function Search-Room-Number {
 	Send-Keys ($roomNumber.ToString());
 	Send-Keys "~";
 	Send-Keys "~";
-	$found = Copy-Room-Search 0;
+	$found = Copy-Room-Search 0 "";
     $Global:lastRoomSearched = $roomNumber;
     $row1 = $found.Substring(0, 36);
 	if ($row1 -eq "NO MATCHES!                         ") {
