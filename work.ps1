@@ -393,15 +393,20 @@ Function Copy-Room-Search {
         $Global:inspect = $found;
         throw "Unexpected length or substring";
     }
-    if (($found.Substring(0, 3) -eq "Res") `
-            -or ($found.Substring(0, 3) -eq "GTD") `
+    if (($found.Substring(0, 3) -eq "GTD") `
             -or ($found.Substring(0, 3) -eq "CXL")) {
         # Send-Keys "{F4}{F4}";
 	    # Send-Keys ($roomNumber.ToString());
 	    # Send-Keys "~";
 	    # Send-Keys "~";
-	    # return Copy-Room-Search $iteration;
+	    # return Copy-Room-Search $iteration $found;
         throw "Check whether 1 or 2 f4s are needed and implement";
+    } elseif (($found.Substring(0, 3) -eq "Res")) {
+        Send-Keys "{F4}{F4}";
+	    Send-Keys ($roomNumber.ToString());
+	    Send-Keys "~";
+	    Send-Keys "~";
+	    return Copy-Room-Search $iteration $found;
     } elseif ($found.Substring(0, 3) -eq $Global:lastRoomSearched.ToString()) {
         # TODO check if the last room wasn't found
         throw "This check worked! Now implement retry and delete below comments.";
