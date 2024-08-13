@@ -197,6 +197,7 @@ Function Are-Services-Weird {
 # TW R  T  T  R  T  T  RW T
 # T  R  T  T  R  TW T  R  T
 # T  T  RW T  T  R  T  T  T
+# T  R  T  T  T  T  TW
 
 # Assumes there won't be any unrecognized services
 Function Are-Non-Checkouts-Weird {
@@ -350,9 +351,9 @@ Function Copy-From-Fosse {
 
 Function Copy-Room-Search {
     Param ([int]$iteration, [string]$lastFound);
-    if (1 -lt $iteration) {
+    if (2 -lt $iteration) {
         $Global:inspect = $lastFound;
-        throw "Didn't work after 1 retry!";
+        throw "Didn't work after 2 retries!";
     }
     $iteration = $iteration + 1;
 	$found = Copy-From-Fosse 710 250 1310 520 -60 10;
@@ -442,8 +443,8 @@ Function Search-Room-Number {
 }
 
 Function Copy-First-6-Requests {
-    $clip = Copy-From-Fosse 270 200 1040 490 10 10;
-    if ($clip.Length -eq 766) {
+    $clip = Copy-From-Fosse 270 180 1040 490 10 10;
+    if ($clip.Length -eq 846) {
         if ($clip.Substring(3, 11) -eq "NUA Message") {
             Send-Keys "~";
         } elseif ($clip.Substring(743, 23) -eq "wed by Acct Code)      ") {
@@ -451,6 +452,10 @@ Function Copy-First-6-Requests {
             throw "I forgot why I wrote the following 2 lines";
             Send-Keys "~";
             return Copy-From-Fosse 660 500 1040 500 10 10;
+        } elseif ($clip.Substring(549, 9) -eq "Room/Stay") {
+        } else {
+            $Global:inspect = $clip;
+            throw "Unexpected length or substring";
         }
     } else {
         $Global:inspect = $clip;
@@ -489,13 +494,12 @@ Function Copy-Housekeeping-Screen {
         $Global:inspect = $clip;
         throw "Unexpected type";
     }
-    if (($clip.Length -eq 1018) -and $clip.Substring(229, 9) -eq "Room/Stay") {
+    if (($clip.Length -eq 1018) -and ($clip.Substring(229, 9) -eq "Room/Stay")) {
         Send-Keys "{F4}";
-        $Global:inspect = $clip;
-        throw "Uncoded path";
-    } elseif ($clip.Length -eq 766) {
-        $Global:inspect = $clip;
-        throw "Implement a substring check";
+        Send-Keys "g";
+        return Copy-Housekeeping-Screen;
+    } elseif (($clip.Length -eq 766) -and ($clip.Substring(469, 9) -eq "Room/Stay")) {
+        throw "This worked! Now remove the throw";
         return Copy-Housekeeping-Screen;
     } else {
         $Global:inspect = $clip;
