@@ -471,7 +471,7 @@ Function Copy-First-6-Requests {
         $Global:inspect = $clip;
         throw "Unexpected length or substring";
     }
-    return $clip.Substring(743, 23);
+    return $clip.Substring(823, 23);
 }
 
 Function Has-J8 {
